@@ -27,7 +27,9 @@ action** as compact JSON — no prose, and no invented selectors.
 - **Base model:** [`openbmb/MiniCPM5-2B`](https://modelscope.cn/models/OpenBMB/MiniCPM5-2B) (Apache-2.0)
 - **Method:** LoRA SFT (r=16, α=32, 1 epoch), then **merged into the base weights** — this release is a full model, not an adapter
 - **Training data:** 9,357 trajectories from driving a real Chrome with a deterministic solver — **zero human labels, no teacher model**
-- **Project / training code:** <https://github.com/&lt;you&gt;/jeva>
+- **Weights:** GGUF (F16 / Q8_0 / Q4_K_M) on the [GitHub release](https://github.com/chemany/jeva/releases); this repo
+  also hosts the merged transformer weights
+- **Project / training code:** <https://github.com/chemany/jeva>
 - **License:** Apache-2.0
 
 ## What it does
@@ -170,7 +172,7 @@ print(tok.decode(out[0][ids["input_ids"].shape[1]:], skip_special_tokens=True))
 The project ships a client that builds the prompt and renders the state for you:
 
 ```bash
-pip install git+https://github.com/<you>/jeva
+pip install git+https://github.com/chemany/jeva
 ```
 
 ```python

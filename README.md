@@ -34,7 +34,7 @@ beyond your usual inference stack.
 
 ## Quick start
 
-Grab a GGUF from the [releases page](../../releases) (or `models/` if you built it yourself) and serve it:
+Grab a GGUF from the [releases page](https://github.com/chemany/jeva/releases) (or `models/` if you built it yourself) and serve it:
 
 ```bash
 llama-server -m MiniCPM5-2B-WebDecider-Q4_K_M.gguf \
@@ -90,6 +90,9 @@ python examples/quickstart.py            # uses the built-in demo observation
 | **jeva · GGUF Q4_K_M** | ” | ” | llama.cpp | **1.56 GB** | **100%** | **276 ms** |
 | MiniCPM5-2B (untrained) | — | 2.5B | — | 5.0 GB | 8% | 237 ms |
 | Bonsai-27B (zero-shot) | Qwen3.8-27B | 27B | GGUF | 14 GB | 70% (10 tasks) | 6800 ms |
+
+All variants are attached to the [release](https://github.com/chemany/jeva/releases); the merged transformer weights are
+mirrored on ModelScope and Hugging Face, linked from that page.
 
 Quantisation costs nothing here: all three GGUF variants score **100%** on the same suites.
 The untrained base on the same prompt scores **8%** — it loops on already-checked radios, uses

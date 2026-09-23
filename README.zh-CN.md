@@ -33,7 +33,7 @@ jeva 接收「一次页面观察 + 一个目标」，输出**恰好一个动作*
 
 ## 快速开始
 
-从 [releases](../../releases) 取一份 GGUF（或自行构建后放在 `models/`），然后起服务：
+从 [releases](https://github.com/chemany/jeva/releases) 取一份 GGUF（或自行构建后放在 `models/`），然后起服务：
 
 ```bash
 llama-server -m MiniCPM5-2B-WebDecider-Q4_K_M.gguf \
@@ -88,6 +88,9 @@ python examples/quickstart.py            # 用内置的示例观察
 | **jeva · GGUF Q4_K_M** | ” | ” | llama.cpp | **1.56 GB** | **100%** | **276 ms** |
 | MiniCPM5-2B（未训练） | — | 2.5B | — | 5.0 GB | 8% | 237 ms |
 | Bonsai-27B（零样本） | Qwen3.8-27B | 27B | GGUF | 14 GB | 70%（10 题） | 6800 ms |
+
+所有形态都随 [release](https://github.com/chemany/jeva/releases) 发布；合并后的 transformer 权重镜像在 ModelScope 与
+Hugging Face，链接见该页面。
 
 量化在这里**没有代价**：三档 GGUF 在同一批测试上都是 **100%**。
 同一提示词下，未训练的基座只有 **8%**——它会反复点击已勾选的单选框、该用 `TYPE_TEXT` 的地方用
