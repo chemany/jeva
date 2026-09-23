@@ -92,9 +92,10 @@ def cmd_download(a) -> int:
     try:
         _download(url, dest)
     except urllib.error.HTTPError as exc:
+        sys.stdout.flush()                       # keep the progress line above the error
         print(f"download failed: HTTP {exc.code} for {url}", file=sys.stderr)
-        print("If the release is not published yet, point --url (or JEVA_BASE_URL) at your own mirror.",
-              file=sys.stderr)
+        print("The release may not be published yet — point --url (or JEVA_BASE_URL) at a mirror "
+              "that has the file.", file=sys.stderr)
         return 1
     print(f"✓ {dest}  ({dest.stat().st_size/1e9:.2f} GB)")
     print(f"  sha256 {sha256(dest)}")
