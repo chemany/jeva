@@ -31,11 +31,13 @@ VARIANTS = {
     "Q8_0": "MiniCPM5-2B-WebDecider-Q8_0.gguf",       # 2.7 GB
     "F16": "MiniCPM5-2B-WebDecider-F16.gguf",         # 5.0 GB
 }
-# Override to point at a mirror (ModelScope, an internal store, ...):
-#   export JEVA_BASE_URL=https://modelscope.cn/models/chemany/jeva/resolve/master
-DEFAULT_BASE_URL = os.environ.get(
-    "JEVA_BASE_URL",
-    "https://github.com/chemany/jeva/releases/download/v0.1.0")
+# 权重来源：按顺序尝试，第一个成功的胜出。设 JEVA_BASE_URL 可覆盖（单一来源）。
+BASE_URLS = [
+    # ModelScope 优先——国内直连，且一个仓库里同时放了合并版权重和 gguf/
+    "https://modelscope.cn/models/chemany/jeva/resolve/master/gguf",
+    "https://github.com/chemany/jeva/releases/download/v0.1.0",
+]
+DEFAULT_BASE_URL = os.environ.get("JEVA_BASE_URL", "")
 
 
 def cache_dir() -> Path:
@@ -88,14 +90,29 @@ def cmd_download(a) -> int:
         print(f"already cached: {dest}")
         print(f"sha256 {sha256(dest)}")
         return 0
-    url = a.url or f"{a.base_url.rstrip('/')}/{name}"
-    try:
-        _download(url, dest)
-    except urllib.error.HTTPError as exc:
-        sys.stdout.flush()                       # keep the progress line above the error
-        print(f"download failed: HTTP {exc.code} for {url}", file=sys.stderr)
-        print("The release may not be published yet — point --url (or JEVA_BASE_URL) at a mirror "
-              "that has the file.", file=sys.stderr)
+    if a.url:
+        sources = [a.url]
+    elif a.base_url:
+        sources = [f"{a.base_url.rstrip('/')}/{name}"]
+    else:
+        sources = [f"{b.rstrip('/')}/{name}" for b in BASE_URLS]
+    last = None
+    for url in sources:
+        try:
+            _download(url, dest)
+            break
+        except urllib.error.HTTPError as exc:
+            sys.stdout.flush()                   # keep the progress line above the error
+            print(f"  {exc.code} from {url}", file=sys.stderr)
+            last = exc
+        except Exception as exc:                 # noqa: BLE001
+            sys.stdout.flush()
+            print(f"  {type(exc).__name__} from {url}", file=sys.stderr)
+            last = exc
+    else:
+        print(f"download failed (last: {last})", file=sys.stderr)
+        print("  Tried: " + "\n         ".join(sources), file=sys.stderr)
+        print("  Point --url (or JEVA_BASE_URL) at a mirror that has the file.", file=sys.stderr)
         return 1
     print(f"✓ {dest}  ({dest.stat().st_size/1e9:.2f} GB)")
     print(f"  sha256 {sha256(dest)}")

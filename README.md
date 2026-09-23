@@ -144,6 +144,30 @@ counts when the browser really ended up in the right state.
 The Bonsai column rests on 10 tasks and is indicative only. It failed the way the untrained base
 does: repeatedly clicking `Round trip` when the goal asked for one way.
 
+### Real-site spot check
+
+jeva was trained only on the synthetic fixtures in `site/`. Pointed at a live third-party form it
+had never seen — [`httpbin.org/forms/post`](https://httpbin.org/forms/post), a real page with three
+text fields, a radio group and four checkboxes — it fills the form and submits it. Four runs:
+
+| | Core fields (name / phone / email / size / submit) | Both toppings asked for | Correct `DONE` after submit |
+|---|---|---|---|
+| 4 runs | **4 / 4** | **1 / 4** | **1 / 4** |
+
+Every run derived the right values from the goal (`Jason Zhang`, `555-0100`, `jason@example.com`,
+`size: large`) and put the prose part of the goal into the instructions textarea. The two failures
+are consistent and worth stating plainly:
+
+- **Partial label matching.** With the goal saying "mushrooms and cheese", the model ticks
+  `Mushroom` but not `Extra Cheese`; given "mushroom and **extra cheese** toppings" it ticks both.
+  A label that is not literally in the goal is easy to miss.
+- **Termination on a non-form page.** After submitting, the page becomes a JSON dump with no
+  interactive elements. Three times out of four the model invented a target (`delivery`) instead of
+  returning `DONE`. The executor rejected the unknown index, so nothing bad happened — which is the
+  point of validating every index against the observation you sent — but this is a real gap.
+
+Reproduce: `python evals/real_site_test.py` (needs network access).
+
 ### Held-out sites
 
 Three sites with **different label vocabularies and layouts** were used. `site3` is the strict
@@ -155,6 +179,7 @@ holdout: it was never used for training, and its labels are entirely different
 | `site1` (in training distribution) | 40 | **100%** |
 | `site2` (in training distribution, extra nav distractors) | 100 | **100%** |
 | **`site3` (never trained, new labels)** | 40 | **100%** |
+| live `httpbin.org/forms/post` (never trained, real markup) | 4 runs | see [below](#real-site-spot-check) |
 
 ### What moved the number
 
@@ -324,7 +349,12 @@ same pipeline produces training data for that site. See [docs/pipeline.md](docs/
 - **Prompt-sensitive.** The system prompt, the operation descriptions and the state layout are
   part of the model. Reproduce them exactly (`jeva.prompt` / `jeva.render` do).
 - **Not a general assistant.** It is a decision head, not a chat model.
-- Evaluated on three synthetic sites (real Chrome, real DOM), not on production websites.
+- **Partial label matching:** a control whose label is not literally in the goal is easy to miss
+  (see [Real-site spot check](#real-site-spot-check)).
+- **Termination on pages without controls** is unreliable — it may invent a target instead of
+  returning `DONE`. Always validate the index against your own observation.
+- Evaluated on three synthetic sites plus one live third-party form (real Chrome, real DOM);
+  this is not a production-website benchmark.
 
 ## License
 
