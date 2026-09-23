@@ -1,7 +1,13 @@
 [project]
 name = "jeva"
 version = "0.1.0"
-description = "A 2B browser-agent decision model you can train and run yourself"
+description = "A 2B browser-agent decision model you can train and run yourself — client, prompt and state rendering"
+keywords = ["decision-model", "browser-agent", "agent", "llm", "automation"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
@@ -18,7 +24,7 @@ eval = ["matplotlib>=3.8"]
 serve = ["vllm>=0.8"]
 
 [project.scripts]
-jeva = "jeva.serve:main"
+jeva = "jeva.cli:main"
 
 [build-system]
 requires = ["setuptools>=61"]

@@ -1,0 +1,2 @@
+[console_scripts]
+jeva = jeva.cli:main
