@@ -10,7 +10,7 @@ dependencies = []
 [project.urls]
 Homepage = "https://github.com/chemany/jeva"
 Issues = "https://github.com/chemany/jeva/issues"
-Model card = "https://github.com/chemany/jeva/blob/main/docs/hf-model-card.md"
+ModelCard = "https://github.com/chemany/jeva/blob/main/docs/hf-model-card.md"
 
 [project.optional-dependencies]
 train = ["torch>=2.0", "transformers>=4.48", "peft>=0.10", "datasets>=3.0", "accelerate>=1.0", "safetensors>=0.4"]
