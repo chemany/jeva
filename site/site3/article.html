@@ -1,0 +1,6 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Article</title></head><body>
+<h1 id="h">Article</h1><p id="echo"></p>
+<script>const p=new URLSearchParams(location.search);
+document.getElementById('h').textContent = p.get('topic') ? `${p.get('topic')} - Wikipedia` : 'Article not found';
+document.getElementById('echo').textContent = p.get('topic') ? `Article about ${p.get('topic')} rendered successfully.` : 'Nothing to show';
+</script></body></html>

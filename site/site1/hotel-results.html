@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Hotel results</title></head><body>
+<h1 id="h">Hotels</h1><p id="echo"></p>
+<ul><li><a href="#">City Hostel</a></li><li><a href="#">Lakeview Inn</a></li></ul>
+<a href="hotels.html">Change search</a>
+<script>
+const p=new URLSearchParams(location.search);
+document.getElementById('echo').textContent =
+  `city=${p.get('city')} max=${p.get('max')} sort=${p.get('sort')} cancel=${p.get('cancel')||'no'}`;
+document.getElementById('h').textContent = p.get('city') ? '4 hotels found' : 'No hotels';
+</script></body></html>

@@ -1,0 +1,259 @@
+{
+  "n": 60,
+  "ok": 47,
+  "rate": 0.7833333333333333,
+  "by_kind": {
+    "flight": [
+      3,
+      16
+    ],
+    "blocked": [
+      9,
+      9
+    ],
+    "hotel": [
+      17,
+      17
+    ],
+    "wiki": [
+      10,
+      10
+    ],
+    "contact": [
+      8,
+      8
+    ]
+  },
+  "fails": [
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Paris to New York on March 3, 2026, for 1 adult in Economy, then ",
+      "status": "ready",
+      "steps": [
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=oneway&cabin=First&pax=1+adult"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from Osaka to Zurich on October 5, 2026, for 1 adult in First, then sub",
+      "status": "ready",
+      "steps": [
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=round&cabin=Economy&pax=1+adult&from=Osaka"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from New York to Osaka on March 3, 2026, for 3 adults in Economy, then ",
+      "status": "ready",
+      "steps": [
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Depart date",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=round&cabin=Business&pax=2+adults&to=Osaka"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from London to Berlin on March 3, 2026, for 2 adults in Business, then ",
+      "status": "ready",
+      "steps": [
+        "CLICK:Return",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Economy&pax=3+adults"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from Berlin to New York on March 3, 2026, for 3 adults in Business, the",
+      "status": "ready",
+      "steps": [
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Going to",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=round&cabin=First&pax=2+adults&dep=March+3,+2026"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Osaka to Paris on October 5, 2026, for 3 adults in Economy, then ",
+      "status": "done",
+      "steps": [
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Going to",
+        "TYPE_TEXT:Depart date",
+        "SELECT:Travel class → Economy",
+        "SELECT:Travellers → 3 adults",
+        "CLICK:Go"
+      ],
+      "final": "flight-results.html?trip=oneway&from=October+5%2C+2026&to=Paris&dep=October+5%2C"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from London to New York on October 5, 2026, for 2 adults in Premium eco",
+      "status": "ready",
+      "steps": [
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=round&cabin=First&pax=1+adult&from=London"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from New York to London on March 3, 2026, for 2 adults in Business, th",
+      "status": "ready",
+      "steps": [
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=oneway&cabin=First&pax=1+adult"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from Paris to Zurich on September 20, 2026, for 1 adult in Economy, the",
+      "status": "ready",
+      "steps": [
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=round&cabin=Economy&pax=2+adults"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from Tokyo to Paris on September 20, 2026, for 1 adult in Business, the",
+      "status": "ready",
+      "steps": [
+        "CLICK:Return",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Premium+economy&pax=3+adults&to=Paris&dep=Septemb"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from London to Zurich on September 20, 2026, for 2 adults in Economy, ",
+      "status": "ready",
+      "steps": [
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Premium+economy&pax=2+adults&from=Osaka&to=Berlin"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Tokyo to Osaka on September 20, 2026, for 3 adults in Economy, th",
+      "status": "ready",
+      "steps": [
+        "CLICK:Single",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Going to",
+        "TYPE_TEXT:Going to",
+        "TYPE_TEXT:Going to",
+        "TYPE_TEXT:Going to",
+        "TYPE_TEXT:Going to",
+        "TYPE_TEXT:Going to",
+        "TYPE_TEXT:Going to",
+        "TYPE_TEXT:Going to"
+      ],
+      "final": "flights.html?trip=round&cabin=First&pax=2+adults&to=Osaka"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from Zurich to Berlin on September 20, 2026, for 3 adults in First, the",
+      "status": "ready",
+      "steps": [
+        "CLICK:Return",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Going to",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from",
+        "TYPE_TEXT:Departing from"
+      ],
+      "final": "flights.html?trip=oneway&cabin=First&pax=3+adults&dep=September+20,+2026"
+    }
+  ]
+}

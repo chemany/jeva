@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Hotel Search</title>
+<style>body{font-family:system-ui;margin:40px;max-width:640px}label{display:block;margin:14px 0 4px}
+input,select,button{padding:7px;font-size:14px;width:100%;box-sizing:border-box}button{margin-top:18px}</style></head><body>
+<h1>Find hotels</h1>
+<form action="/hotel-results.html" method="get">
+  <label for="city">Where?</label><input id="city" name="city" placeholder="Where?">
+  <label for="max">Price limit</label>
+  <select id="max" name="max"><option>$50</option><option>$100</option><option>$200</option><option>$500</option></select>
+  <label for="sort">Sort</label>
+  <select id="sort" name="sort"><option>Relevance</option><option>Price low to high</option><option>Rating</option></select>
+  <label><input type="checkbox" id="cancel" name="cancel" value="1"> Free cancellation</label>
+  <button type="submit">Submit</button>
+</form>
+<script>
+const p=new URLSearchParams(location.search);
+const setv=(id,k)=>{const e=document.getElementById(id); if(e&&p.has(k)) e.value=p.get(k);};
+setv('city','city'); setv('max','max'); setv('sort','sort');
+if(p.get('cancel')==='1') document.getElementById('cancel').checked=true;
+</script></body></html>

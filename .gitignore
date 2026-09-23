@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+runs/
+# 完整训练集由采集器再生（~11 分钟）；仓库只保留可人工核对的样本
+evals/data/sft*.jsonl
+models/
+*.gguf
+*.safetensors
+.idea/
+.vscode/

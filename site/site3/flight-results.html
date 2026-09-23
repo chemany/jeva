@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Flight results</title></head><body>
+<h1 id="h">Results</h1><p id="echo"></p>
+<ul><li><a href="#">07:15 - 09:40 SWISS nonstop</a></li><li><a href="#">11:20 - 13:55 British Airways nonstop</a></li><li><a href="#">18:05 - 20:35 Lufthansa nonstop</a></li></ul>
+<a href="/flights.html">Change search</a>
+<script>
+const p=new URLSearchParams(location.search);
+document.getElementById('echo').textContent =
+  `trip=${p.get('trip')} from=${p.get('from')} to=${p.get('to')} dep=${p.get('dep')} cabin=${p.get('cabin')} pax=${p.get('pax')}`;
+document.getElementById('h').textContent = p.get('from')&&p.get('to') ? '3 flights found' : 'No results';
+</script></body></html>

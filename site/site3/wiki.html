@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Wikipedia search</title>
+<style>body{font-family:system-ui;margin:40px;max-width:600px}input{padding:8px;width:100%;box-sizing:border-box}
+li[role=option]{padding:8px;cursor:pointer;border-bottom:1px solid #ddd}li[role=option]:hover{background:#eef}</style></head><body>
+<h1>Search Wikipedia</h1>
+<label for="q">Search</label><input id="q" role="combobox" aria-expanded="false" aria-controls="opts" autocomplete="off">
+<ul id="opts" role="listbox" hidden></ul>
+<script>
+const OPTS=["Photosynthesis","Photosystem II","Cellular respiration","Chlorophyll","Photoperiodism"];
+const q=document.getElementById('q'), list=document.getElementById('opts');
+const p=new URLSearchParams(location.search);
+function render(){const v=q.value.trim().toLowerCase();
+  const hits=OPTS.filter(o=>v.length>=3&&o.toLowerCase().includes(v));
+  list.innerHTML='';
+  hits.forEach(o=>{const li=document.createElement('li');li.setAttribute('role','option');
+    li.textContent=o;li.onclick=()=>location.href='/article.html?topic='+encodeURIComponent(o);list.appendChild(li);});
+  list.hidden=hits.length===0; q.setAttribute('aria-expanded',String(hits.length>0));}
+q.addEventListener('input',render);
+if(p.has('q')){q.value=p.get('q'); render();}
+</script></body></html>

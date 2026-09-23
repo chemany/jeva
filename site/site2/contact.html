@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Contact us</title>
+<style>body{font-family:system-ui;margin:40px;max-width:640px}label{display:block;margin:14px 0 4px}
+input,textarea,button{padding:7px;font-size:14px;width:100%;box-sizing:border-box}button{margin-top:18px}</style></head><body>
+<nav style="margin-bottom:18px"><a href="#">Help centre</a> · <a href="#">Sitemap</a> · <a href="#">Language: English</a></nav>
+<h1>Contact us</h1>
+<form action="/thanks.html" method="get">
+  <label for="name">Your name</label><input id="name" name="name">
+  <label for="email">E-mail</label><input id="email" name="email">
+  <label for="msg">Enquiry</label><textarea id="msg" name="msg" rows="4"></textarea>
+  <label><input type="checkbox" id="agree" name="agree" value="1"> Agree to terms</label>
+  <button type="submit">Submit</button>
+</form>
+<script>
+const p=new URLSearchParams(location.search);
+const setv=(id,k)=>{const e=document.getElementById(id); if(e&&p.has(k)) e.value=p.get(k);};
+setv('name','name'); setv('email','email'); setv('msg','msg');
+if(p.get('agree')==='1') document.getElementById('agree').checked=true;
+</script></body></html>

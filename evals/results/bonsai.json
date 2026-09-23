@@ -1,0 +1,77 @@
+{
+  "n": 10,
+  "ok": 7,
+  "rate": 0.7,
+  "by_kind": {
+    "hotel": [
+      2,
+      3
+    ],
+    "flight": [
+      2,
+      4
+    ],
+    "contact": [
+      2,
+      2
+    ],
+    "blocked": [
+      1,
+      1
+    ]
+  },
+  "fails": [
+    {
+      "kind": "flight",
+      "goal": "Find round flights from Osaka to Paris on March 3, 2026, for 2 adults in Economy, then sub",
+      "status": "blocked",
+      "steps": [
+        "TYPE_TEXT:Where from?",
+        "CLICK:Search",
+        "CLICK:Change search",
+        "TYPE_TEXT:Where from?",
+        "CLICK:Round trip",
+        "CLICK:Open Departure",
+        "SELECT:Passengers → 2 adults",
+        "CLICK:Search"
+      ],
+      "final": "flight-results.html?trip=round&from=Osaka&to=&dep=&cabin=Economy&pax=2+adults"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from Osaka to New York on October 5, 2026, for 3 adults in Premium econ",
+      "status": "ready",
+      "steps": [
+        "CLICK:Round trip",
+        "TYPE_TEXT:Where from?",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Open Departure",
+        "CLICK:Open Departure"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Premium+economy&pax=1+adult&from=Zurich&to=New+Yo"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in New York with free cancellation only, at most $50 per night, sorted by pric",
+      "status": "ready",
+      "steps": [
+        "SELECT:Max price per night → $5",
+        "SELECT:Max price per night → $1",
+        "SELECT:Max price per night → $5",
+        "CLICK:Free cancellation only",
+        "CLICK:Search hotels",
+        "CLICK:Change search",
+        "TYPE_TEXT:City",
+        "SELECT:Max price per night → $1",
+        "SELECT:Max price per night → $5",
+        "CLICK:Free cancellation only"
+      ],
+      "final": "hotels.html"
+    }
+  ]
+}

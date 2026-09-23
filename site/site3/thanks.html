@@ -1,0 +1,7 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Thank you</title></head><body>
+<h1>Thank you</h1><p id="echo"></p>
+<script>
+const p=new URLSearchParams(location.search);
+document.getElementById('echo').textContent =
+  `name=${p.get('name')} email=${p.get('email')} msg=${p.get('msg')} agree=${p.get('agree')||'no'}`;
+</script></body></html>

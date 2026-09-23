@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Flight Search</title>
+<style>body{font-family:system-ui;margin:40px;max-width:640px}label{display:block;margin:14px 0 4px}
+input,select,button{padding:7px;font-size:14px;width:100%;box-sizing:border-box}button{margin-top:18px}</style></head><body>
+<h1>Search flights</h1>
+<form action="flight-results.html" method="get">
+  <fieldset><legend>Ticket type</legend>
+    <label><input type="radio" name="trip" id="trip_round" value="round"> Round trip</label>
+    <label><input type="radio" name="trip" id="trip_oneway" value="oneway"> One way</label>
+  </fieldset>
+  <label for="from">Where from?</label><input id="from" name="from" placeholder="Origin city">
+  <label for="to">Where to?</label><input id="to" name="to" placeholder="Destination city">
+  <label for="dep">Departure</label><input id="dep" name="dep" placeholder="Date">
+  <label for="cabin">Cabin</label>
+  <select id="cabin" name="cabin"><option>Economy</option><option>Premium economy</option><option>Business</option><option>First</option></select>
+  <label for="pax">Passengers</label>
+  <select id="pax" name="pax"><option>1 adult</option><option>2 adults</option><option>3 adults</option></select>
+  <button type="submit">Search</button>
+</form>
+<script>
+const p=new URLSearchParams(location.search);
+const setv=(id,k)=>{const e=document.getElementById(id); if(e&&p.has(k)) e.value=p.get(k);};
+if(p.has('trip')) document.getElementById(p.get('trip')==='oneway'?'trip_oneway':'trip_round').checked=true;
+setv('from','from'); setv('to','to'); setv('dep','dep'); setv('cabin','cabin'); setv('pax','pax');
+</script></body></html>
