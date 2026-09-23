@@ -93,7 +93,8 @@ def cmd_download(a) -> int:
         _download(url, dest)
     except urllib.error.HTTPError as exc:
         print(f"download failed: HTTP {exc.code} for {url}", file=sys.stderr)
-        print("如果发布页还没上线，用 --url 指向你自己的镜像，或设 JEVA_BASE_URL。", file=sys.stderr)
+        print("If the release is not published yet, point --url (or JEVA_BASE_URL) at your own mirror.",
+              file=sys.stderr)
         return 1
     print(f"✓ {dest}  ({dest.stat().st_size/1e9:.2f} GB)")
     print(f"  sha256 {sha256(dest)}")
@@ -253,7 +254,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", action="version", version="%(prog)s 0.1.0")
     sub = p.add_subparsers(dest="command")
 
-    def add_serving_args(sp, need_model=True):
+    def add_serving_args(sp):
         sp.add_argument("--backend", choices=["llamacpp", "vllm"], default="llamacpp")
         sp.add_argument("--variant", choices=list(VARIANTS), default="Q4_K_M")
         sp.add_argument("--gguf", help="explicit GGUF path (llamacpp)")

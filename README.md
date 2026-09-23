@@ -32,9 +32,31 @@ beyond your usual inference stack.
 - **Zero human labels.** 9,357 training trajectories from 2,200 tasks, collected in ~11 minutes; training is one LoRA pass, ~70 minutes on one V100.
 - **Everything included**: the collector, the training script, the merge/quantise pipeline, the three test sites, and the frozen eval results.
 
+## Install
+
+Neither route needs a clone, and neither installs a second dependency.
+
+```bash
+pip install jeva        # client + CLI, ~19 KB, zero dependencies
+jeva download          # Q4_K_M weights (1.6 GB) into ~/.cache/jeva, with sha256
+jeva demo              # start a server if it is not running, make one decision
+jeva serve             # leave the server running on 127.0.0.1:8020
+jeva check             # report what is missing (llama-server, weights, port)
+```
+
+Only the client ships in the wheel — weights are fetched on demand, because a 1.6 GB GGUF has no
+business inside a Python distribution. Point `JEVA_BASE_URL` (or `--url`) at your own mirror if you
+prefer to download elsewhere.
+
+Until the PyPI release is live, install straight from Git:
+
+```bash
+pip install "git+https://github.com/chemany/jeva"
+```
+
 ## Quick start
 
-Grab a GGUF from the [releases page](https://github.com/chemany/jeva/releases) (or `models/` if you built it yourself) and serve it:
+By hand — grab a GGUF from the [release](https://github.com/chemany/jeva/releases) and serve it:
 
 ```bash
 llama-server -m MiniCPM5-2B-WebDecider-Q4_K_M.gguf \

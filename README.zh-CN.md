@@ -31,9 +31,30 @@ jeva 接收「一次页面观察 + 一个目标」，输出**恰好一个动作*
 - **零人工标注。** 2,200 个任务产出 9,357 条训练轨迹，采集约 11 分钟；训练是一轮 LoRA，单张 V100 约 70 分钟。
 - **代码齐全**：采集器、训练脚本、合并/量化流程、三个测试站点、以及冻结的评测结果。
 
+## 安装
+
+两种方式都不需要克隆仓库，也都不会多装一个依赖。
+
+```bash
+pip install jeva        # 客户端 + CLI，约 19 KB，零依赖
+jeva download          # 拉 Q4_K_M 权重（1.6 GB）到 ~/.cache/jeva，附 sha256
+jeva demo              # 服务没起就帮你起，然后做一次真实决策
+jeva serve             # 把服务留在 127.0.0.1:8020
+jeva check             # 报告缺什么（llama-server / 权重 / 端口）
+```
+
+wheel 里**只装客户端**，权重按需下载——1.6 GB 的 GGUF 不应该塞进 Python 发行包里。
+想从自己的镜像下，把 `JEVA_BASE_URL`（或 `--url`）指过去即可。
+
+PyPI 正式发布之前，可以直接从 Git 安装：
+
+```bash
+pip install "git+https://github.com/chemany/jeva"
+```
+
 ## 快速开始
 
-从 [releases](https://github.com/chemany/jeva/releases) 取一份 GGUF（或自行构建后放在 `models/`），然后起服务：
+手动起服务——从 [release](https://github.com/chemany/jeva/releases) 取一份 GGUF 然后：
 
 ```bash
 llama-server -m MiniCPM5-2B-WebDecider-Q4_K_M.gguf \
