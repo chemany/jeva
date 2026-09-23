@@ -29,6 +29,9 @@ CHROME_FLAGS = [
     "--disable-gpu", "--disable-gpu-compositing", "--disable-software-rasterizer",
     "--disable-accelerated-2d-canvas", "--disable-features=VizDisplayCompositor",
     "--hide-scrollbars", "--proxy-server='direct://'", "--proxy-bypass-list=*",
+    # Only what fits the viewport is observable, so a laptop-sized window matters:
+    # the 800x600 headless default hides the bottom of an ordinary form.
+    "--window-size=1280,900",
 ]
 
 

@@ -1,9 +1,16 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><title>Pizza order</title>
-<style>body{font-family:system-ui;margin:40px;max-width:620px}
-label{display:block;margin:10px 0}input[type=text]{padding:7px;width:100%;box-sizing:border-box}
-button{margin-top:18px;padding:9px 16px}</style></head><body>
+<style>body{font-family:system-ui;margin:18px;max-width:760px}
+fieldset{margin:8px 0;padding:6px 10px}fieldset label{display:inline-block;margin:2px 14px 2px 0}
+label{display:block;margin:6px 0}input[type=text],input[type=tel],input[type=email],input[type=time]{padding:5px;box-sizing:border-box}
+input[type=text],input[type=tel],input[type=email]{width:100%}
+button{margin-top:10px;padding:8px 14px}</style></head><body>
 <h1>Order a pizza</h1>
 <form action="/multi-results.html" method="get">
+  <fieldset><legend>Contact details</legend>
+    <label for="name">Your name:</label><input type="text" id="name" name="name">
+    <label for="phone">Phone number:</label><input type="tel" id="phone" name="phone">
+    <label for="email">E-mail address:</label><input type="email" id="email" name="email">
+  </fieldset>
   <fieldset><legend>Toppings (extra charge)</legend>
     <label><input type="checkbox" name="extras" value="cheese"> Extra Cheese</label>
     <label><input type="checkbox" name="extras" value="mushroom"> Mushroom</label>
@@ -29,4 +36,5 @@ p.getAll('pre').forEach(v => {
 });
 if (p.has('note')) document.getElementById('note').value = p.get('note');
 if (p.has('when')) document.getElementById('when').value = p.get('when');
+['name','phone','email'].forEach(k => { if (p.has(k)) document.getElementById(k).value = p.get(k); });
 </script></body></html>

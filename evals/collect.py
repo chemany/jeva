@@ -42,14 +42,17 @@ ALIAS = {
     "sort": {"Sort by", "Sort", "Order by"},
     "cancel": {"Free cancellation only", "Free cancellation", "Cancellable only"},
     "search_hotels": {"Search hotels", "Find hotels", "Search"},
-    "name": {"Full name", "Name", "Your name"},
-    "email": {"Email", "Email address", "E-mail"},
+    # 同一个概念在三个站点皮肤里写法不同，必须合成一个键；拆成两个键会因字典后写覆盖前写
+    # 而丢掉另一批标签（site2 用 "Your name"、site3 用 "Email address"）。
+    "name": {"Full name", "Name", "Your name", "Your name:", "Full name:", "Customer name:"},
+    "email": {"Email", "Email address", "E-mail", "E-mail address:", "Email:"},
     "msg": {"Message", "Your message", "Details", "Enquiry", "Comments"},
     "agree": {"I agree to the privacy policy", "I accept the privacy policy", "Agree to terms"},
     "send": {"Send", "Submit", "Send message"},
     "q": {"Search", "Search Wikipedia", "Query"},
     "note": {"Note for the kitchen", "Note", "Comments"},
     "when": {"Preferred delivery time:", "Delivery time", "Time"},
+    "phone": {"Phone number:", "Phone", "Telephone:", "Telephone"},
     "trip_round": {"Round trip", "Return", "Round-trip"},
     "trip_oneway": {"One way", "One-way", "Single"},
 }
@@ -76,6 +79,15 @@ TIMES = ["12:30", "6:15 PM", "19:45", "9:00 AM", "13:05", "8:30 pm"]
 TIME_CLAUSES = [("for delivery at {t}", "Delivery is at {t}."),
                 ("with delivery no earlier than {t}", "Delivery must be no earlier than {t}."),
                 ("for delivery around {t}", "Delivery should be around {t}.")]
+
+PEOPLE = ["Jason Zhang", "Li Wei", "Maria Lopez", "Chen Yu"]
+PHONES = ["555-0100", "+41 44 555 01 23", "13800138000", "020 7946 0958"]
+EMAILS = ["jason@example.com", "li.wei@example.org", "maria@example.net"]
+# 真实用户常把多个字段写成裸列表（"Name X, phone Y, email Z"），而不是逐个动词交代
+BARE_ORDER = ["Name {name}, phone {phone}, email {email}.",
+              "Contact {name}, {phone}, {email}.",
+              "Reach {name} at {phone} or {email}."]
+VERBOSE_ORDER = ["Use the name {name}, the phone number {phone} and the email {email}."]
 
 NOTE_PHRASES = ['Add the note "{n}".', 'Include a note saying "{n}".',
                 'Put "{n}" in the notes.', 'Leave a note that says "{n}".']
@@ -171,6 +183,10 @@ def gen_multi(rng):
     flag = rng.choice(FLAGS) if rng.random() < 0.6 else None
     note = rng.choice(NOTES)
     when = rng.choice(TIMES) if rng.random() < 0.55 else None
+    contact = None
+    if rng.random() < 0.45:
+        contact = {"name": rng.choice(PEOPLE), "phone": rng.choice(PHONES),
+                   "email": rng.choice(EMAILS)}
     words = [t[2] for t in want] + ([flag[2]] if flag else [])
     items = _human_join(words)
     if when and rng.random() < 0.5:
@@ -180,11 +196,13 @@ def gen_multi(rng):
         order = f"Order a pizza with {items}, then place the order."
         if when:
             order += " " + rng.choice(TIME_CLAUSES)[1].format(t=when)
+    goal = order
+    if contact:
+        style = rng.choice(BARE_ORDER + BARE_ORDER + VERBOSE_ORDER)
+        goal += " " + style.format(**contact)
     if note:
         phrase = rng.choice(NOTE_PHRASES).format(n=note)
-        goal = f"{order} {phrase}" if rng.random() < 0.5 else f"{phrase} {order}"
-    else:
-        goal = order
+        goal = f"{goal} {phrase}" if rng.random() < 0.5 else f"{phrase} {goal}"
 
     pre = []
     for _v, label, _w in want:                      # 有时已经勾好，有时勾了不该勾的
@@ -193,16 +211,20 @@ def gen_multi(rng):
     if rng.random() < 0.2:
         wrong = rng.choice([t for t in TOPPINGS if t not in want])
         pre.append(wrong[0])
-    when_pre = when if when and rng.random() < 0.3 else None      # 有时时间已经填好了
+    when_pre = when if when and rng.random() < 0.3 else None      # 有时已经填好了
+    contact_pre = [k for k in (contact or {}) if rng.random() < 0.25]
     url = f"{SITE}/multi.html" + ("?" + "&".join(f"pre={v}" for v in pre) if pre else "")
     if when_pre:
         url += ("&" if "?" in url else "?") + "when=" + when_pre.replace(" ", "+")
+    for k in contact_pre:
+        url += "&" + k + "=" + str(contact[k]).replace(" ", "+")
     if note and rng.random() < 0.35:            # 多数情况下 note 是空的，必须真的去填
         url += ("&" if "?" in url else "?") + "note=" + note.replace(" ", "+")
     spec = {"kind": "multi",
             "want": [(label, v) for v, label, _w in want],
             "flag": (flag[1], flag[0]) if flag else None,
             "when": when,
+            "contact": contact,
             "note": note}
     return url, goal, spec
 
@@ -307,6 +329,14 @@ def oracle(elements, targets, spec, url=""):
             checks.append((label, label,
                            lambda e: e is not None and e.get("checked") == "true",
                            (lambda lb: lambda: ("CLICK", _key_by_label(elements, targets, lb), None))(label)))
+        for key, field in (("name", "name"), ("phone", "phone"), ("email", "email")):
+            want = (spec.get("contact") or {}).get(key)
+            if want:
+                checks.append((key, f"contact:{key}",
+                               (lambda w: lambda e: e is not None and _n(e.get("value")) == _n(w))(want),
+                               (lambda w, f: lambda: ("TYPE_TEXT",
+                                                      _key_of(elements, targets, "TYPE_TEXT", f),
+                                                      w))(want, field)))
         if spec["when"]:
             checks.append(("when", "Time",
                            lambda e: e is not None and _tval(e.get("value")) == _tval(spec["when"]),
@@ -361,6 +391,11 @@ def _key_of(elements, targets, op, field):
     if e is None:
         return None
     return str(e["index"]) if str(e["index"]) in targets.get(op, {}) else None
+
+
+def _n(s):
+    """比较文本时的宽松归一：忽略大小写、空格与标点。"""
+    return "".join(c for c in str(s).lower() if c.isalnum())
 
 
 def _tval(x):
@@ -493,6 +528,10 @@ def verify(spec, url, status):
             return False
         if spec["when"] and _tval(q.get("when", [""])[0]) != _tval(spec["when"]):
             return False
+        for key in ("name", "phone", "email"):
+            want = (spec.get("contact") or {}).get(key)
+            if want and n(want) not in n(q.get(key, [""])[0]):
+                return False
         if spec["note"] and n(spec["note"]) not in n(q.get("note", [""])[0]):
             return False
         return True
