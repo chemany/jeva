@@ -6,5 +6,6 @@ const p = new URLSearchParams(location.search);
 document.getElementById('echo').textContent =
   'toppings=' + (p.getAll('extras').join('+') || 'none') +
   ' flags=' + (p.getAll('flags').join('+') || 'none') +
+  ' when=' + (p.get('when') || '') +
   ' note=' + (p.get('note') || '');
 </script></body></html>

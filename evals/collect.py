@@ -21,7 +21,8 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(_HERE))          # repo root -> jeva package
 sys.path.insert(0, _HERE)                           # evals/ -> browser.py
 
-from browser import CDP, Browser, action_space, launch_chrome, to_page   # noqa: E402
+from browser import (CDP, Browser, _normalize_for_input, action_space,   # noqa: E402
+                     launch_chrome, to_page)
 
 SITE = os.environ.get("SITE", "http://127.0.0.1:8899")
 # 多站点：每个任务随机选一个站点根，逼模型学“规则”而不是记住某套标签
@@ -48,6 +49,7 @@ ALIAS = {
     "send": {"Send", "Submit", "Send message"},
     "q": {"Search", "Search Wikipedia", "Query"},
     "note": {"Note for the kitchen", "Note", "Comments"},
+    "when": {"Preferred delivery time:", "Delivery time", "Time"},
     "trip_round": {"Round trip", "Return", "Round-trip"},
     "trip_oneway": {"One way", "One-way", "Single"},
 }
@@ -68,6 +70,13 @@ FLAGS = [("nonstop", "Nonstop delivery only", "direct delivery"),
          ("gift", "Gift wrapping", "gift wrapping")]
 NOTES = [None, "Ring the bell", "Leave at the door", "Call on arrival", "Extra napkins please"]
 # 同一要求的不同措辞 + 不同从句位置，避免模型只学会「读目标最后一句」
+# 时间要求：含 24 小时与 AM/PM 两种写法，压一压浏览器的原生校验
+TIMES = ["12:30", "6:15 PM", "19:45", "9:00 AM", "13:05", "8:30 pm"]
+# (插在中间的写法, 另起一句的写法)，两种都要自然通顺，模型读到的是自然语言
+TIME_CLAUSES = [("for delivery at {t}", "Delivery is at {t}."),
+                ("with delivery no earlier than {t}", "Delivery must be no earlier than {t}."),
+                ("for delivery around {t}", "Delivery should be around {t}.")]
+
 NOTE_PHRASES = ['Add the note "{n}".', 'Include a note saying "{n}".',
                 'Put "{n}" in the notes.', 'Leave a note that says "{n}".']
 
@@ -161,8 +170,16 @@ def gen_multi(rng):
     want = rng.sample(TOPPINGS, rng.choice([2, 2, 3]))
     flag = rng.choice(FLAGS) if rng.random() < 0.6 else None
     note = rng.choice(NOTES)
+    when = rng.choice(TIMES) if rng.random() < 0.55 else None
     words = [t[2] for t in want] + ([flag[2]] if flag else [])
-    order = "Order a pizza with " + _human_join(words) + ", then place the order."
+    items = _human_join(words)
+    if when and rng.random() < 0.5:
+        mid, _tail = rng.choice(TIME_CLAUSES)
+        order = f"Order a pizza with {items}, {mid.format(t=when)}, then place the order."
+    else:
+        order = f"Order a pizza with {items}, then place the order."
+        if when:
+            order += " " + rng.choice(TIME_CLAUSES)[1].format(t=when)
     if note:
         phrase = rng.choice(NOTE_PHRASES).format(n=note)
         goal = f"{order} {phrase}" if rng.random() < 0.5 else f"{phrase} {order}"
@@ -176,12 +193,16 @@ def gen_multi(rng):
     if rng.random() < 0.2:
         wrong = rng.choice([t for t in TOPPINGS if t not in want])
         pre.append(wrong[0])
+    when_pre = when if when and rng.random() < 0.3 else None      # 有时时间已经填好了
     url = f"{SITE}/multi.html" + ("?" + "&".join(f"pre={v}" for v in pre) if pre else "")
+    if when_pre:
+        url += ("&" if "?" in url else "?") + "when=" + when_pre.replace(" ", "+")
     if note and rng.random() < 0.35:            # 多数情况下 note 是空的，必须真的去填
         url += ("&" if "?" in url else "?") + "note=" + note.replace(" ", "+")
     spec = {"kind": "multi",
             "want": [(label, v) for v, label, _w in want],
             "flag": (flag[1], flag[0]) if flag else None,
+            "when": when,
             "note": note}
     return url, goal, spec
 
@@ -286,6 +307,11 @@ def oracle(elements, targets, spec, url=""):
             checks.append((label, label,
                            lambda e: e is not None and e.get("checked") == "true",
                            (lambda lb: lambda: ("CLICK", _key_by_label(elements, targets, lb), None))(label)))
+        if spec["when"]:
+            checks.append(("when", "Time",
+                           lambda e: e is not None and _tval(e.get("value")) == _tval(spec["when"]),
+                           lambda: ("TYPE_TEXT", _key_of(elements, targets, "TYPE_TEXT", "when"),
+                                    spec["when"])))
         if spec["note"]:
             checks.append(("note", "Note",
                            lambda e: e is not None and (e.get("value") or "").strip() == spec["note"],
@@ -335,6 +361,11 @@ def _key_of(elements, targets, op, field):
     if e is None:
         return None
     return str(e["index"]) if str(e["index"]) in targets.get(op, {}) else None
+
+
+def _tval(x):
+    """把时间写法折成浏览器最终会存下的样子（6:15 PM 与 18:15 视为同一个要求）。"""
+    return _normalize_for_input(str(x)) if x else None
 
 
 def _key_by_label(elements, targets, label):
@@ -459,6 +490,8 @@ def verify(spec, url, status):
         if not all(v in got for _l, v in spec["want"]):
             return False
         if spec["flag"] and spec["flag"][1] not in q.get("flags", []):
+            return False
+        if spec["when"] and _tval(q.get("when", [""])[0]) != _tval(spec["when"]):
             return False
         if spec["note"] and n(spec["note"]) not in n(q.get("note", [""])[0]):
             return False
