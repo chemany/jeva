@@ -33,6 +33,7 @@ echo "▶ F16  $F16"
 "$PY" "$CONVERT" "$BASE" --outfile "$F16" --outtype f16
 
 for q in $QUANTS; do
+  [ "$q" = "F16" ] && continue        # F16 is the converter's output, not a quantisation target
   dst="$OUT/$NAME-$q.gguf"
   echo "▶ $q  $dst"
   LD_LIBRARY_PATH="$(dirname "$QUANTIZE"):${LD_LIBRARY_PATH:-}" "$QUANTIZE" "$F16" "$dst" "$q"
