@@ -14,13 +14,24 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(_HERE))          # repo root -> jeva package
 sys.path.insert(0, _HERE)                           # evals/ -> browser.py, collect.py
 
-from browser import CDP, Browser, action_space, launch_chrome, to_page   # noqa: E402
+from browser import (CDP, Browser, StalePage, action_space,   # noqa: E402
+                     launch_chrome, to_page)
 import collect as C                                                      # noqa: E402
 
 MAX_STEPS = int(os.environ.get("MAX_STEPS", "10"))
 
 
-def run_task(task, cdp, backend):
+def observe(b: Browser, tries: int = 12, settle: float = 0.15):
+    """Observe, retrying while the document is mid-navigation (StalePage is not a failure)."""
+    for i in range(tries):
+        try:
+            return b.observe(screenshot=False, settle=settle)
+        except StalePage:
+            time.sleep(0.08)
+    raise StalePage("document never settled")
+
+
+def run_task(task, cdp, backend, latencies=None):
     from jeva.render import render_state
 
     url, goal, spec = task
@@ -29,7 +40,7 @@ def run_task(task, cdp, backend):
     status = "ready"
     final = url
     try:
-        page = b.observe(screenshot=False)
+        page = observe(b)
         for _ in range(MAX_STEPS):
             actions = [a for a in page["actions"] if a.get("kind") != "wait"]
             elements, targets, controls = action_space(actions)
@@ -37,6 +48,8 @@ def run_task(task, cdp, backend):
             state = render_state(jpage, goal, history)
 
             decision = backend.decide(jpage, goal, history)
+            if latencies is not None and backend.last_latency_ms is not None:
+                latencies.append(backend.last_latency_ms)
             op, tgt, text = decision.operation, decision.target, decision.text or None
             if op in ("DONE", "BLOCKED"):
                 status = "blocked" if op == "BLOCKED" else "done"
@@ -48,7 +61,7 @@ def run_task(task, cdp, backend):
             b.act(action, page, text=text)
             history.append({"action": action["label"], "kind": action["kind"], "text": text})
             steps.append(f"{op}:{action['label'][:24]}")
-            page = b.observe(screenshot=False)
+            page = observe(b)
         final = page["url"]
     except Exception as exc:                                      # noqa: BLE001
         status = f"error:{type(exc).__name__}"
@@ -72,18 +85,21 @@ def main():
     from jeva import Jeva
     backend = Jeva(os.environ["LLM_DECISION_URL"].rstrip("/").removesuffix("/chat/completions"),
                    model=os.environ.get("LLM_DECISION_MODEL", "jeva"))
-    proc, ws = launch_chrome()
+    proc, ws = launch_chrome(port=9351, profile="/tmp/jeva-eval")
     cdp = CDP(ws)
 
     ok_n = 0
     by_kind = {}
     fails = []
+    latencies = []
+    invalid = 0
     t0 = time.time()
     try:
         for i in range(n):
             task = rng.choice(C.GENS)(rng)
             kind = task[2]["kind"]
-            ok, status, steps, final = run_task(task, cdp, backend)
+            ok, status, steps, final = run_task(task, cdp, backend, latencies)
+            invalid += status == "invalid_action"
             by_kind.setdefault(kind, [0, 0])
             by_kind[kind][1] += 1
             by_kind[kind][0] += bool(ok)
@@ -100,14 +116,14 @@ def main():
         except Exception:                                         # noqa: BLE001
             proc.kill()
 
-    ms = sorted(backend.stats["ms"])
+    ms = sorted(latencies)
     print("=" * 92)
     print(f"随机任务评估（{n} 个，seed={seed}）| 成功率 {ok_n}/{n} = {ok_n/n*100:.1f}%")
     for k, (a, b) in sorted(by_kind.items()):
         print(f"  {k:<9s} {a}/{b} ({a/b*100:.0f}%)")
     if ms:
         print(f"决策延迟 p50 {ms[len(ms)//2]:.0f}ms  p90 {ms[int(len(ms)*0.9)]:.0f}ms  "
-              f"| 解析失败 {backend.stats['unparsed']} 目标非法 {backend.stats['bad_target']}")
+              f"| 目标非法（模型编了不存在的序号）{invalid} 次")
     print(f"耗时 {time.time()-t0:.0f}s")
     if fails:
         print("失败样例（最多 6 个）:")

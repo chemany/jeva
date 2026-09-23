@@ -9,3 +9,6 @@ models/
 *.safetensors
 .idea/
 .vscode/
+
+# 采集/训练/服务日志
+*.log

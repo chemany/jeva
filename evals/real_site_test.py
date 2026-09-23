@@ -56,6 +56,10 @@ def main():
                 label = str(act.get("label", ""))[:46]
             print(f"[{i+1:02d}] {op:<9s} target={tgt:<6s} {label:<48s} "
                   f"text={text!r}  ({jeva.last_latency_ms:.0f}ms)")
+            if os.environ.get("SHOW_RAW") == "1":
+                print(f"      raw: {decision.raw.strip()[:160]}")
+                print(f"      TYPE_TEXT 候选: {sorted((targets.get('TYPE_TEXT') or {}).keys())}")
+                print(f"      CLICK 候选:     {sorted((targets.get('CLICK') or {}).keys())}")
             if op in ("DONE", "BLOCKED"):
                 print(f"\n→ 模型判定 {op}")
                 break

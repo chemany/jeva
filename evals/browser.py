@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import shutil
 import subprocess
 import threading
@@ -64,6 +65,26 @@ class CDP:
 
     def __call__(self, method, session_id=None, **params):
         return self._run(self._call(method, params, session_id))
+
+
+def _normalize_for_input(text: str) -> str | None:
+    """Narrow a planner value to what a native picker will accept.
+
+    ``<input type=time>`` only takes ``HH:MM``, so "12:30 PM" has to be rewritten. The AM/PM
+    suffix carries no information the page lacks, because the clock format comes from the page,
+    not from jeva.
+    """
+    match = re.fullmatch(r"\s*(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)?\s*", text, re.IGNORECASE)
+    if not match:
+        return None
+    hour, minute, meridiem = int(match.group(1)), match.group(2), (match.group(3) or "").lower()
+    if hour > 23:
+        return None
+    if meridiem == "pm" and hour < 12:
+        hour += 12
+    elif meridiem == "am" and hour == 12:
+        hour = 0
+    return f"{hour:02d}:{minute}"
 
 
 def launch_chrome(port: int = 9333, profile: str = "/tmp/jeva-chrome-profile"):
@@ -159,13 +180,40 @@ class Browser:
             for event in ("mousePressed", "mouseReleased"):
                 self.call("Input.dispatchMouseEvent", type=event, x=x, y=y, button="left", clickCount=1)
             if kind == "fill" and text:
+                before = self._focused_value()
                 # commands=["selectAll"] is what actually clears the field; the modifier alone
                 # is not enough over CDP.
                 self.call("Input.dispatchKeyEvent", type="keyDown", key="a", code="KeyA",
                           modifiers=2, commands=["selectAll"])
                 self.call("Input.dispatchKeyEvent", type="keyUp", key="a", code="KeyA", modifiers=2)
                 self.call("Input.insertText", text=text)
+                # Date/time/color inputs reject insertText entirely, so retry through the native
+                # setter. Compare with the pre-write value because the field may already have
+                # held something (or nothing) and insertText silently did nothing either way.
+                if self._focused_value() == before:
+                    candidates = [text]
+                    normalized = _normalize_for_input(text)
+                    if normalized and normalized != text:
+                        candidates.append(normalized)
+                    for candidate in candidates:
+                        self._set_native_value(candidate)
+                        if self._focused_value() == candidate:
+                            break
         return {"executed": action["id"]}
+
+    def _focused_value(self):
+        return self.evaluate("(() => (document.activeElement || {}).value)()")
+
+    def _set_native_value(self, text):
+        return self.evaluate(
+            "(t => { const e = document.activeElement; if (!e) return null;"
+            " const proto = e.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype"
+            "                                              : HTMLInputElement.prototype;"
+            " const d = Object.getOwnPropertyDescriptor(proto, 'value');"
+            " d && d.set.call(e, t);"
+            " e.dispatchEvent(new Event('input', {bubbles: true}));"
+            " e.dispatchEvent(new Event('change', {bubbles: true}));"
+            " return e.value; })(" + json.dumps(text) + ")")
 
     def close(self):
         if self.target:

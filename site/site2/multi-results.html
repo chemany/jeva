@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Order placed</title></head><body>
+<h1>Order placed</h1>
+<p id="echo"></p>
+<script>
+const p = new URLSearchParams(location.search);
+document.getElementById('echo').textContent =
+  'toppings=' + (p.getAll('extras').join('+') || 'none') +
+  ' flags=' + (p.getAll('flags').join('+') || 'none') +
+  ' note=' + (p.get('note') || '');
+</script></body></html>

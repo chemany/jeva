@@ -41,7 +41,7 @@
       if (['button','submit','reset','image'].includes(e.type)) return 'button';
       if (e.type==='search') return 'searchbox';
       if (e.type==='number') return 'spinbutton';
-      if (['text','email','url','tel'].includes(e.type)) return 'textbox';
+      if (['text','email','url','tel','time','date','datetime-local','month','week'].includes(e.type)) return 'textbox';
     }
     return null;
   };

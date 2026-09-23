@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Pizza order</title>
+<style>body{font-family:system-ui;margin:40px;max-width:620px}
+label{display:block;margin:10px 0}input[type=text]{padding:7px;width:100%;box-sizing:border-box}
+button{margin-top:18px;padding:9px 16px}</style></head><body>
+<h1>Order a pizza</h1>
+<form action="/multi-results.html" method="get">
+  <fieldset><legend>Toppings (extra charge)</legend>
+    <label><input type="checkbox" name="extras" value="cheese"> Extra Cheese</label>
+    <label><input type="checkbox" name="extras" value="mushroom"> Mushroom</label>
+    <label><input type="checkbox" name="extras" value="olives"> Black Olives</label>
+    <label><input type="checkbox" name="extras" value="pepperoni"> Pepperoni</label>
+    <label><input type="checkbox" name="extras" value="onion"> Onion</label>
+  </fieldset>
+  <fieldset><legend>Preferences</legend>
+    <label><input type="checkbox" name="flags" value="nonstop"> Nonstop delivery only</label>
+    <label><input type="checkbox" name="flags" value="refundable"> Free cancellation</label>
+    <label><input type="checkbox" name="flags" value="gift"> Gift wrapping</label>
+  </fieldset>
+  <label for="note">Note for the kitchen</label><input type="text" id="note" name="note">
+  <button type="submit">Place order</button>
+</form>
+<script>
+// 初始状态由 URL 决定，用来造出“已勾选/已填好”的各种起点
+const p = new URLSearchParams(location.search);
+p.getAll('pre').forEach(v => {
+  const box = [...document.querySelectorAll('input[type=checkbox]')].find(b => b.value === v);
+  if (box) box.checked = true;
+});
+if (p.has('note')) document.getElementById('note').value = p.get('note');
+</script></body></html>

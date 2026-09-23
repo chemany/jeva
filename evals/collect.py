@@ -47,6 +47,7 @@ ALIAS = {
     "agree": {"I agree to the privacy policy", "I accept the privacy policy", "Agree to terms"},
     "send": {"Send", "Submit", "Send message"},
     "q": {"Search", "Search Wikipedia", "Query"},
+    "note": {"Note for the kitchen", "Note", "Comments"},
     "trip_round": {"Round trip", "Return", "Round-trip"},
     "trip_oneway": {"One way", "One-way", "Single"},
 }
@@ -56,6 +57,20 @@ PAX = ["1 adult", "2 adults", "3 adults"]
 MAXPRICE = ["$50", "$100", "$200", "$500"]
 SORTS = ["Relevance", "Price low to high", "Rating"]
 CITIES = ["Zurich", "Paris", "Berlin", "Tokyo", "Osaka", "London", "New York"]
+# (value, label, goal_word)：label 与 goal_word 故意不同，制造「目标用词 ≠ 控件标签」的情况
+TOPPINGS = [("cheese", "Extra Cheese", "cheese"),
+            ("mushroom", "Mushroom", "mushrooms"),
+            ("olives", "Black Olives", "olives"),
+            ("pepperoni", "Pepperoni", "pepperoni"),
+            ("onion", "Onion", "onions")]
+FLAGS = [("nonstop", "Nonstop delivery only", "direct delivery"),
+         ("refundable", "Free cancellation", "a refundable booking"),
+         ("gift", "Gift wrapping", "gift wrapping")]
+NOTES = [None, "Ring the bell", "Leave at the door", "Call on arrival", "Extra napkins please"]
+# 同一要求的不同措辞 + 不同从句位置，避免模型只学会「读目标最后一句」
+NOTE_PHRASES = ['Add the note "{n}".', 'Include a note saying "{n}".',
+                'Put "{n}" in the notes.', 'Leave a note that says "{n}".']
+
 TOPICS = ["Photosynthesis", "Photosystem II", "Cellular respiration", "Chlorophyll", "Photoperiodism"]
 
 
@@ -134,15 +149,61 @@ def gen_wiki(rng):
     return url, goal, spec
 
 
+def gen_multi(rng):
+    """多要求目标 + 标签≠目标用词 + 提交后跳到无可交互元素的页面。
+
+    三个缺口一次覆盖：
+      1. 目标要求勾选 2-3 个复选框（不是单个），且部分已预勾选（测试“别重复点”）
+      2. 目标用词与控件标签不同（目标说 cheese，标签是 "Extra Cheese"；目标说
+         "direct delivery"，标签是 "Nonstop delivery only"）
+      3. 结果页 multi-results.html 没有任何可交互元素 → 必须直接判 DONE
+    """
+    want = rng.sample(TOPPINGS, rng.choice([2, 2, 3]))
+    flag = rng.choice(FLAGS) if rng.random() < 0.6 else None
+    note = rng.choice(NOTES)
+    words = [t[2] for t in want] + ([flag[2]] if flag else [])
+    order = "Order a pizza with " + _human_join(words) + ", then place the order."
+    if note:
+        phrase = rng.choice(NOTE_PHRASES).format(n=note)
+        goal = f"{order} {phrase}" if rng.random() < 0.5 else f"{phrase} {order}"
+    else:
+        goal = order
+
+    pre = []
+    for _v, label, _w in want:                      # 有时已经勾好，有时勾了不该勾的
+        if rng.random() < 0.35:
+            pre.append(_v)
+    if rng.random() < 0.2:
+        wrong = rng.choice([t for t in TOPPINGS if t not in want])
+        pre.append(wrong[0])
+    url = f"{SITE}/multi.html" + ("?" + "&".join(f"pre={v}" for v in pre) if pre else "")
+    if note and rng.random() < 0.35:            # 多数情况下 note 是空的，必须真的去填
+        url += ("&" if "?" in url else "?") + "note=" + note.replace(" ", "+")
+    spec = {"kind": "multi",
+            "want": [(label, v) for v, label, _w in want],
+            "flag": (flag[1], flag[0]) if flag else None,
+            "note": note}
+    return url, goal, spec
+
+
+def _human_join(items):
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
+    return ", ".join(items[:-1]) + f" and {items[-1]}"
+
+
 def gen_blocked(rng):
     return f"{SITE}/blocked.html", "Export the full catalogue to CSV.", {"kind": "blocked"}
 
 
-GENS = [gen_flight, gen_flight, gen_hotel, gen_hotel, gen_contact, gen_wiki, gen_blocked]
+GENS = [gen_flight, gen_flight, gen_hotel, gen_hotel, gen_contact, gen_wiki, gen_blocked,
+        gen_multi, gen_multi, gen_multi, gen_multi]
 
 
 # ── oracle：从目标 + 当前 DOM 推出正确动作（同时产出"已满足/未完成"提示）──
-SUCCESS_URL = ("flight-results", "hotel-results", "thanks", "article")
+SUCCESS_URL = ("flight-results", "hotel-results", "multi-results", "thanks", "article")
 
 
 def oracle(elements, targets, spec, url=""):
@@ -214,6 +275,28 @@ def oracle(elements, targets, spec, url=""):
             return "DONE", None, None, None, sat, miss
         return "CLICK", _key_of(elements, targets, "CLICK", "send"), None, None, sat, miss
 
+    if kind == "multi":
+        checks = []
+        for label, _value in spec["want"]:
+            checks.append((label, label,
+                           lambda e: e is not None and e.get("checked") == "true",
+                           (lambda lb: lambda: ("CLICK", _key_by_label(elements, targets, lb), None))(label)))
+        if spec["flag"]:
+            label = spec["flag"][0]
+            checks.append((label, label,
+                           lambda e: e is not None and e.get("checked") == "true",
+                           (lambda lb: lambda: ("CLICK", _key_by_label(elements, targets, lb), None))(label)))
+        if spec["note"]:
+            checks.append(("note", "Note",
+                           lambda e: e is not None and (e.get("value") or "").strip() == spec["note"],
+                           lambda: ("TYPE_TEXT", _key_of(elements, targets, "TYPE_TEXT", "note"), spec["note"])))
+        action = _resolve(checks, elements, sat, miss)
+        if action:
+            return action[0], action[1], action[2], None, sat, miss
+        if any(u in url for u in SUCCESS_URL) or not elements:
+            return "DONE", None, None, None, sat, miss
+        return "CLICK", _key_by_label(elements, targets, "Place order"), None, None, sat, miss
+
     if kind == "wiki":
         e = find(elements, "q")
         topic = spec["topic"]
@@ -252,6 +335,16 @@ def _key_of(elements, targets, op, field):
     if e is None:
         return None
     return str(e["index"]) if str(e["index"]) in targets.get(op, {}) else None
+
+
+def _key_by_label(elements, targets, label):
+    """按控件标签（而非 ALIAS 键）取 CLICK 目标键。"""
+    for e in elements:
+        if lab_of(e) == label:
+            k = str(e["index"])
+            if k in (targets.get("CLICK") or {}):
+                return k
+    return None
 
 
 def _opt_key(elements, targets, field, want):
@@ -359,6 +452,18 @@ def verify(spec, url, status):
     if spec["kind"] == "contact":
         return ("thanks" in url and n(spec["name"]) in n(q.get("name", [""])[0])
                 and n(spec["email"]) in n(q.get("email", [""])[0]) and q.get("agree", [""])[0] == "1")
+    if spec["kind"] == "multi":
+        if "multi-results" not in url:
+            return False
+        got = set(q.get("extras", []))
+        if not all(v in got for _l, v in spec["want"]):
+            return False
+        if spec["flag"] and spec["flag"][1] not in q.get("flags", []):
+            return False
+        if spec["note"] and n(spec["note"]) not in n(q.get("note", [""])[0]):
+            return False
+        return True
+
     if spec["kind"] == "wiki":
         return "article" in url and n(spec["topic"]) in n(q.get("topic", [""])[0])
     return False
