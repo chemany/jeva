@@ -42,6 +42,7 @@ jeva download          # Q4_K_M weights (1.6 GB) into ~/.cache/jeva, with sha256
 jeva demo              # start a server if it is not running, make one decision
 jeva serve             # leave the server running on 127.0.0.1:8020
 jeva check             # report what is missing (llama-server, weights, port)
+jeva run <url> <goal>  # drive a real Chrome towards the goal, one step at a time
 ```
 
 Only the client ships in the wheel — weights are fetched on demand, because a 1.6 GB GGUF has no
@@ -101,6 +102,39 @@ Try it without installing anything else:
 ```bash
 python examples/quickstart.py            # uses the built-in demo observation
 ```
+
+## Driving a browser
+
+`Jeva` decides; `jeva.Agent` runs the loop around it. One command drives a real Chrome:
+
+```bash
+jeva run "https://example.com/order" \
+  "Order one large pizza with mushrooms and cheese, for delivery at 12:30, then place the order." \
+  --screenshots ./steps --json
+```
+
+```python
+from jeva import Agent
+
+with Agent("https://example.com/order", "Order one large pizza ...") as agent:
+    result = agent.run()
+print(result.status, result.url, len(result.steps))
+```
+
+The loop exists because a decision is only safe to execute if something checks it:
+
+| Guard | What it prevents |
+|---|---|
+| the target index is resolved against the observation the decision came from | a decision acting on an element that appeared later |
+| the decision is consumed once | a retry clicking twice |
+| freshness is re-checked before acting, and before accepting `DONE` / `BLOCKED` | clicking into a page that moved, or "done" against a stale page |
+| three actions that change nothing end the run | a confused decider spending the whole step budget |
+
+`status` is the model's claim. The result carries the final URL, the page text and the steps, so
+your code can verify -- a submitted form usually puts every value in the URL. **Do not treat
+`status == "done"` as proof.**
+
+Measured on the flight fixture: 7 steps in 4.2 s, screenshots included (one V100, Q4_K_M).
 
 ## Models
 
@@ -357,7 +391,9 @@ same pipeline produces training data for that site. See [docs/pipeline.md](docs/
 
 ## Limits
 
-- **It decides; it does not act.** The output is an index into the observation *you* supplied.
+- **The model decides; the loop acts.** `Jeva.decide()` returns an index into the observation *you*
+  supplied and nothing else. `jeva.Agent` (or `jeva run`) supplies the loop, the executor and the
+  guards -- but its `DONE` is still a claim, not proof.
   Your executor must resolve it, check the page is still fresh, and handle failure.
 - **Narrow action space.** No `SCROLL`, no file uploads, no multi-step dropdown widgets. If your
   agent needs those, extend the action space and retrain.

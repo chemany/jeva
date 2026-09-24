@@ -40,6 +40,7 @@ pip install jeva        # 客户端 + CLI，约 19 KB，零依赖
 jeva download          # 拉 Q4_K_M 权重（1.6 GB）到 ~/.cache/jeva，附 sha256
 jeva demo              # 服务没起就帮你起，然后做一次真实决策
 jeva serve             # 把服务留在 127.0.0.1:8020
+jeva run <网址> <目标>   # 用真实 Chrome 逐步完成目标
 jeva check             # 报告缺什么（llama-server / 权重 / 端口）
 ```
 
@@ -98,6 +99,38 @@ print(action.as_dict())
 ```bash
 python examples/quickstart.py            # 用内置的示例观察
 ```
+
+## 驱动浏览器
+
+`Jeva` 负责决策，`jeva.Agent` 负责它外面的循环。一条命令即可驱动真实 Chrome：
+
+```bash
+jeva run "https://example.com/order" \
+  "Order one large pizza with mushrooms and cheese, for delivery at 12:30, then place the order." \
+  --screenshots ./steps --json
+```
+
+```python
+from jeva import Agent
+
+with Agent("https://example.com/order", "Order one large pizza ...") as agent:
+    result = agent.run()
+print(result.status, result.url, len(result.steps))
+```
+
+循环存在的理由是：**一个决策只有被检查过才是安全可执行的**。
+
+| 守卫 | 挡住什么 |
+|---|---|
+| 序号对回该决策所依据的那份观察 | 决策作用到之后才出现的元素上 |
+| 决策一次性消费 | 重试导致点两次 |
+| 动作前、以及接受 `DONE`/`BLOCKED` 前都重新校验新鲜度 | 对着已经变了的页面点击，或对旧页面声称完成 |
+| 连续 3 步页面无变化即终止 | 迷糊的决策模型耗光整份步数预算 |
+
+`status` 是模型的**声称**。结果里带着结束页 URL、页面文本与逐步动作，供你的代码验证——
+提交成功时参数通常都在 URL 里。**不要把 `status == "done"` 当成证据。**
+
+实测（机票测试页）：7 步 4.2 秒，含截图（单卡 V100，Q4_K_M）。
 
 ## 模型
 
@@ -342,8 +375,9 @@ python scripts/convert_gguf.sh
 
 ## 局限
 
-- **它只做决策，不做执行。** 输出是**你提供的那份观察**里的序号，执行器必须自己解析、检查页面是否
-  仍然新鲜、并处理失败。
+- **模型只做决策，执行由循环负责。** `Jeva.decide()` 返回的是**你提供的那份观察**里的序号，
+  仅此而已。`jeva.Agent`（或 `jeva run`）提供循环、执行器与守卫——但它的 `DONE` 依然是
+  **声称**而非证据。
 - **动作空间很窄。** 没有 `SCROLL`、没有文件上传、没有多步下拉控件。你的智能体若需要这些，
   请扩展动作空间并重训。
 - **面向表单形态的任务。** 它在搜索/筛选/表单/自动补全这类流程上训练；`DONE` 与 `BLOCKED`
