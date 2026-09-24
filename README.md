@@ -139,6 +139,27 @@ never touched. Two caveats: let Chrome close normally (Chrome flushes cookies in
 killed process loses them, which `jeva login` handles), and the site must set a cookie with an
 expiry -- a pure session cookie is not persisted by any browser.
 
+### Irreversible actions: `--vote`
+
+Clicking the wrong "Submit", "Pay" or "Delete" cannot be undone. With `--vote N`, an action whose
+label matches the built-in list (`submit`, `pay`, `delete`, `place order`, ...) is sampled N times
+and executed only if every sample agrees; ordinary actions keep the single 230 ms decision. On
+disagreement nothing runs: the run returns `status="unsure"`, exit code 4, and reports the split.
+
+Measured on the live form: the seven ordinary steps cost nothing extra, the one `Submit order` step
+took 3 agreeing samples, 6.9 s total against 6.8 s without voting. On a deliberately ambiguous page
+(`Confirm order` next to `Cancel order`, goal "Handle the pending order") five samples split 2/2/1
+and **no action executed**.
+
+**This is agreement, not probability.** jeva has no probability head -- a confident wrong sample
+looks exactly like a confident right one. The value is narrower and honest: a decision the model
+will not reproduce is a decision not to act on. `--vote` needs a temperature above 0; at 0 every
+sample is identical.
+
+An optional `--escalate-url` lets a second endpoint break the tie. It is **off by default and no
+second model is required** -- without it, disagreement simply stops the run, which is the
+recommended behaviour. Only wire it up if you actually own a *more trustworthy* model.
+
 The loop exists because a decision is only safe to execute if something checks it:
 
 | Guard | What it prevents |

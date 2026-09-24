@@ -319,6 +319,20 @@ def build_parser() -> argparse.ArgumentParser:
                         "allowed once at chrome://inspect/#remote-debugging")
     r.add_argument("--screenshots", help="directory to save step screenshots into")
     r.add_argument("--settle", type=float, default=0.6, help="seconds to wait after each action")
+    guard = r.add_argument_group("safety (for irreversible actions)")
+    guard.add_argument("--vote", type=int, default=1, metavar="N",
+                       help="before an IRREVERSIBLE action (submit / pay / delete / ...), sample the "
+                            "decision N times and require agreement; disagreeing means nothing runs. "
+                            "Ordinary actions keep the single fast decision. Default 1 = off")
+    guard.add_argument("--irreversible", action="append", metavar="SUBSTRING",
+                       help="extra label substring to treat as irreversible (repeatable); "
+                            "the built-in list is used when omitted")
+    guard.add_argument("--vote-temperature", type=float, default=0.8,
+                       help="sampling temperature for the repeated decisions (default 0.8)")
+    guard.add_argument("--escalate-url", metavar="URL",
+                       help="OPTIONAL. On disagreement, re-decide against this OpenAI-compatible "
+                            "endpoint instead of stopping. Nothing here requires a second model; "
+                            "if you have none, leave it unset and the run stops instead")
     r.add_argument("--json", action="store_true", help="print the full result as JSON")
     r.set_defaults(func=cmd_run)
 
@@ -338,27 +352,55 @@ def build_parser() -> argparse.ArgumentParser:
 
 def cmd_run(a) -> int:
     from .agent import Agent
+    from .browser import action_space, to_page
     from .client import Jeva
     jeva = Jeva(f"http://127.0.0.1:{a.port}/v1", model=a.model)
     persistent = getattr(a, "profile_dir", None)
+    escalate = None
+    if getattr(a, "escalate_url", None):
+        # A hook, not a dependency: the second model is only consulted when the local samples
+        # disagree, and its answer is used only if it is unambiguous.
+        stronger = Jeva(a.escalate_url, model=os.environ.get("JEVA_ESCALATE_MODEL", "jeva"))
+
+        def escalate(page, goal, history, verdict):          # noqa: ANN001
+            """Ask the second endpoint to break the tie. Returning None means 'still unsure',
+            which keeps the run stopped rather than letting a coin flip through."""
+            elements = action_space(page["actions"])[0]
+            try:
+                alt = stronger.decide(to_page(page, elements), goal, history)
+            except Exception:                                 # noqa: BLE001
+                return None
+            return alt if not alt.terminal else None
+
     agent = Agent(a.url, a.goal, jeva=jeva, max_steps=a.steps, port=a.chrome_port,
                   profile=persistent or a.profile, chrome=a.chrome, cdp_ws=a.cdp_ws,
                   attach=a.attach, fresh=persistent is None,
-                  screenshot_dir=a.screenshots, settle=a.settle)
+                  screenshot_dir=a.screenshots, settle=a.settle,
+                  vote=a.vote, irreversible=a.irreversible, vote_temperature=a.vote_temperature,
+                  escalate=escalate)
     result = agent.run()
     if a.json:
         print(json.dumps(result.as_dict(), ensure_ascii=False, indent=2))
     else:
         for s in result.steps:
             note = "" if s.page_changed else "  (page unchanged)"
+            if s.escalated:
+                note += "  [irreversible, samples disagreed -> escalated]"
+            elif s.votes:
+                note += f"  [irreversible, {s.votes} samples agreed]"
             print(f"  [{s.n:02d}] {s.operation:<9s} {s.target:<6s} {s.label[:44]:<46s} "
                   f"{s.text!r}{note}")
         print(f"\n  {result.status.upper()}: {result.reason}")
         print(f"  ended at {result.url}")
         print(f"  {len(result.steps)} steps, {result.elapsed_ms} ms, "
               f"{result.invalid_targets} invalid targets")
+    if result.disagreement:
+        from collections import Counter
+        print("\n  样本分歧，未执行任何动作：")
+        for sample, count in Counter(json.dumps(d, sort_keys=True) for d in result.disagreement).items():
+            print(f"    {count}× {sample}")
     # The model's DONE is a claim, not proof; the caller checks the page.
-    return 0 if result.status == "done" else (1 if result.status == "blocked" else 2)
+    return {"done": 0, "blocked": 1, "unsure": 4}.get(result.status, 2)
 
 
 def cmd_login(a) -> int:

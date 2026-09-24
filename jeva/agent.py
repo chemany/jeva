@@ -22,12 +22,21 @@ from typing import Iterable
 
 from .browser import (CDP, Browser, StalePage, action_space, chrome_ws_url,   # noqa: F401
                       close_chrome, launch_chrome, to_page)
-from .client import Jeva
+from .client import Jeva, Vote
 
 # An observation is only useful if a decision can act on it; these bound the loop instead of
 # letting a confused decider run forever.
 DEFAULT_MAX_STEPS = 25
 NO_PROGRESS_LIMIT = 3
+
+# Labels that look like they cannot be taken back. Matching is a plain case-insensitive substring
+# test, so the list is deliberately specific: "cancel order" rather than "cancel" (which also
+# matches "Free cancellation"), "place order" rather than "order" (which also matches "Order by").
+DEFAULT_IRREVERSIBLE = (
+    "submit", "send", "pay", "buy", "purchase", "checkout", "place order", "order now",
+    "confirm order", "delete", "remove", "unsubscribe", "transfer", "apply", "book", "reserve",
+    "publish", "upload", "donate", "cancel order", "complete purchase",
+)
 
 
 @dataclass
@@ -42,18 +51,24 @@ class Step:
     url: str
     page_changed: bool = False
     latency_ms: int = 0
+    irreversible: bool = False
+    votes: int = 0                 # samples taken before executing (0 = decided once)
+    agreement: float = 1.0         # share of samples that matched
+    escalated: bool = False        # the samples disagreed and a second endpoint broke the tie
 
     def as_dict(self) -> dict:
         return {"n": self.n, "operation": self.operation, "target": self.target, "text": self.text,
                 "label": self.label, "url": self.url, "page_changed": self.page_changed,
-                "latency_ms": self.latency_ms}
+                "latency_ms": self.latency_ms, "irreversible": self.irreversible,
+                "votes": self.votes, "agreement": self.agreement,
+                "escalated": self.escalated}
 
 
 @dataclass
 class RunResult:
     """What happened. ``status`` is the model's claim; ``verify`` the caller's job."""
 
-    status: str                      # "done" | "blocked" | "failed"
+    status: str                      # "done" | "blocked" | "failed" | "unsure"
     reason: str
     url: str = ""
     title: str = ""
@@ -62,16 +77,22 @@ class RunResult:
     elapsed_ms: int = 0
     screenshots: list[str] = field(default_factory=list)
     invalid_targets: int = 0
+    disagreement: list[dict] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
         return self.status == "done"
 
+    @property
+    def acted(self) -> bool:
+        """True when nothing irreversible was executed on a decision the model would not repeat."""
+        return self.status != "unsure"
+
     def as_dict(self) -> dict:
         return {"status": self.status, "reason": self.reason, "url": self.url, "title": self.title,
                 "steps": [s.as_dict() for s in self.steps], "elapsed_ms": self.elapsed_ms,
                 "screenshots": self.screenshots, "invalid_targets": self.invalid_targets,
-                "text": self.text[:4000]}
+                "disagreement": self.disagreement, "text": self.text[:4000]}
 
 
 class Agent:
@@ -86,7 +107,8 @@ class Agent:
                  profile: str = "/tmp/jeva-agent-profile", chrome: str | None = None,
                  screenshot_dir: str | None = None, cdp_ws: str | None = None,
                  attach: str | bool | None = None, settle: float = 0.6,
-                 fresh: bool = True):
+                 fresh: bool = True, vote: int = 1, irreversible=None,
+                 vote_temperature: float = 0.8, escalate=None):
         if not goal.strip():
             raise ValueError("Supply a goal")
         self.url = url
@@ -94,6 +116,13 @@ class Agent:
         self.jeva = jeva or Jeva()
         self.max_steps = max_steps
         self.settle = settle
+        # Voting only guards the actions that cannot be undone; everything else keeps the single
+        # 230 ms decision. ``escalate`` is an optional hook so a deployment that owns a stronger
+        # model can plug it in -- nothing here requires a second model to exist.
+        self.vote = max(1, vote)
+        self.vote_temperature = vote_temperature
+        self.irreversible = tuple(DEFAULT_IRREVERSIBLE if irreversible is None else irreversible)
+        self.escalate = escalate
         self.screenshot_dir = Path(screenshot_dir) if screenshot_dir else None
         if self.screenshot_dir:
             self.screenshot_dir.mkdir(parents=True, exist_ok=True)
@@ -143,6 +172,10 @@ class Agent:
         label = str(act.get("label", "")).split(" → ")[0]
         return act, elements, targets, label
 
+    def is_irreversible(self, label: str) -> bool:
+        low = (label or "").lower()
+        return any(p.lower() in low for p in self.irreversible)
+
     # -- the loop ----------------------------------------------------------------------------
     def run(self) -> RunResult:
         started = time.perf_counter()
@@ -185,9 +218,37 @@ class Agent:
                     page = self._observe()
                     continue
 
+                risky = self.is_irreversible(label)
+                escalated = False
+                if risky and self.vote > 1:
+                    verdict = self.jeva.vote(to_page(page, _elements), self.goal, history_lines,
+                                             n=self.vote, temperature=self.vote_temperature)
+                    if not verdict.unanimous:
+                        resolved = self.escalate(page, self.goal, history_lines, verdict) \
+                            if self.escalate else None
+                        if resolved is None:
+                            result = RunResult(
+                                status="unsure",
+                                reason=(f"{self.vote} samples disagreed on {label!r} "
+                                        f"(agreement {verdict.agreement:.0%}); nothing executed"),
+                                url=page.get("url", ""), title=page.get("title", ""),
+                                text=str(page.get("text") or ""), steps=self.history,
+                                elapsed_ms=int((time.perf_counter() - started) * 1000),
+                                screenshots=self._screenshots,
+                                invalid_targets=self.invalid_targets)
+                            result.disagreement = [s.as_dict() for s in verdict.samples]   # type: ignore[attr-defined]
+                            return result
+                        action = resolved
+                        escalated = True
+                    else:
+                        action = verdict.action
+                    latency = int(self.jeva.last_latency_ms or 0)
+
                 step = Step(n=n, operation=action.operation, target=action.target,
                             text=action.text, label=label, url=page.get("url", ""),
-                            latency_ms=latency)
+                            latency_ms=latency, irreversible=risky,
+                            votes=self.vote if (risky and self.vote > 1) else 0)
+                step.escalated = escalated
                 # Record before acting: a stale observation after the action must not lose the step.
                 self.history.append(step)
                 try:
