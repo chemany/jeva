@@ -118,6 +118,22 @@ with Agent("https://example.com/order", "Order one large pizza ...") as agent:
 print(result.status, result.url, len(result.steps))
 ```
 
+### 需要登录态的站点：登录一次，之后全无头
+
+默认就是**无头浏览器：不需要任何授权、不弹窗口、不需要 `DISPLAY`**。登录态用**持久 profile**
+解决，而不是去借用您日常的浏览器：
+
+```bash
+jeva login --url https://example.com/login          # 只做一次：弹出窗口，您自己登录
+jeva run "https://example.com/orders" "下载上个月的发票" \
+  --profile-dir ~/.local/share/jeva/chrome          # 之后全程无头
+```
+
+**刻意不走 Chrome 的"允许远程调试"那条路**：那个授权每次连接都要人工点一次，与"无人值守"正好相反。
+持久 profile 不需要任何授权，而且它是独立的一次性 profile——您自己的书签、密码、标签页全程不受影响。
+两个注意点：让 Chrome 正常退出（它批量写盘，强杀会丢 cookie，`jeva login` 已处理）；站点必须设置
+**带过期时间**的 cookie，纯会话 cookie 任何浏览器都不会持久化。
+
 循环存在的理由是：**一个决策只有被检查过才是安全可执行的**。
 
 | 守卫 | 挡住什么 |

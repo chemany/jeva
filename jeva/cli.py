@@ -26,6 +26,7 @@ from pathlib import Path
 
 DEFAULT_PORT = 8020
 DEFAULT_ALIAS = "jeva"
+DEFAULT_PROFILE = os.path.expanduser("~/.local/share/jeva/chrome")
 VARIANTS = {
     "Q4_K_M": "MiniCPM5-2B-WebDecider-v7-Q4_K_M.gguf",   # 1.6 GB, the recommended default
     "Q8_0": "MiniCPM5-2B-WebDecider-v7-Q8_0.gguf",       # 2.7 GB
@@ -309,10 +310,25 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--profile", default="/tmp/jeva-agent-profile", help="throwaway Chrome profile")
     r.add_argument("--chrome", help="explicit Chrome binary")
     r.add_argument("--cdp-ws", help="attach to a browser that is already running (reuse a login)")
+    r.add_argument("--profile-dir", metavar="DIR",
+                   help="persistent browser profile: cookies from an earlier `jeva login` are reused, "
+                        "so a signed-in site needs no manual approval at run time")
+    r.add_argument("--attach", nargs="?", const=True, metavar="PROFILE_DIR",
+                   help="attach to your own Chrome and reuse its cookies/login. Finds the browser "
+                        "automatically; pass a profile dir to override. Needs remote debugging to be "
+                        "allowed once at chrome://inspect/#remote-debugging")
     r.add_argument("--screenshots", help="directory to save step screenshots into")
     r.add_argument("--settle", type=float, default=0.6, help="seconds to wait after each action")
     r.add_argument("--json", action="store_true", help="print the full result as JSON")
     r.set_defaults(func=cmd_run)
+
+    lg = sub.add_parser("login", help="open a headful Chrome once so you can sign in; cookies persist")
+    lg.add_argument("--url", default="about:blank", help="page to open (default about:blank)")
+    lg.add_argument("--profile-dir", default=None, help=f"profile directory (default {DEFAULT_PROFILE})")
+    lg.add_argument("--display", default=None, help="X display for the window (default $DISPLAY or :10)")
+    lg.add_argument("--seconds", type=int, default=None,
+                    help="close automatically after N seconds instead of waiting for Enter")
+    lg.set_defaults(func=cmd_login)
 
     c = sub.add_parser("check", help="diagnose the local setup")
     c.add_argument("--port", type=int, default=DEFAULT_PORT)
@@ -324,8 +340,10 @@ def cmd_run(a) -> int:
     from .agent import Agent
     from .client import Jeva
     jeva = Jeva(f"http://127.0.0.1:{a.port}/v1", model=a.model)
+    persistent = getattr(a, "profile_dir", None)
     agent = Agent(a.url, a.goal, jeva=jeva, max_steps=a.steps, port=a.chrome_port,
-                  profile=a.profile, chrome=a.chrome, cdp_ws=a.cdp_ws,
+                  profile=persistent or a.profile, chrome=a.chrome, cdp_ws=a.cdp_ws,
+                  attach=a.attach, fresh=persistent is None,
                   screenshot_dir=a.screenshots, settle=a.settle)
     result = agent.run()
     if a.json:
@@ -341,6 +359,36 @@ def cmd_run(a) -> int:
               f"{result.invalid_targets} invalid targets")
     # The model's DONE is a claim, not proof; the caller checks the page.
     return 0 if result.status == "done" else (1 if result.status == "blocked" else 2)
+
+
+def cmd_login(a) -> int:
+    """Sign in once, keep the cookies. Later runs use the same profile headlessly."""
+    from .browser import CDP, close_chrome, launch_chrome
+    profile = a.profile_dir or DEFAULT_PROFILE
+    os.makedirs(profile, exist_ok=True)
+    if not os.environ.get("DISPLAY") and not os.environ.get("WAYLAND_DISPLAY"):
+        # A window has to land in the desktop session even when we are started from a bare shell.
+        os.environ["DISPLAY"] = a.display or os.environ.get("JEVA_DISPLAY", ":10")
+    print(f"Opening Chrome with the profile:\n  {profile}")
+    print("Sign in to whatever you need. The cookies stay in that directory;")
+    print("later `jeva run --profile-dir` calls reuse them and stay headless.")
+    proc, ws = launch_chrome(port=9334, profile=profile, fresh=False, headless=False, url=a.url)
+    cdp = CDP(ws)
+    try:
+        if a.seconds:
+            time.sleep(a.seconds)
+        else:
+            try:
+                input("\nPress Enter here when you are done signing in... ")
+            except EOFError:
+                print("(no terminal; waiting 120s)")
+                time.sleep(120)
+    finally:
+        # A graceful close is what flushes cookies into the profile; killing Chrome can lose the
+        # very session the user just created.
+        close_chrome(proc, cdp)
+    print(f"Saved. Run with:  jeva run <url> \"<goal>\" --profile-dir {profile}")
+    return 0
 
 
 def main(argv=None) -> int:

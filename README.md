@@ -121,6 +121,24 @@ with Agent("https://example.com/order", "Order one large pizza ...") as agent:
 print(result.status, result.url, len(result.steps))
 ```
 
+### Logged-in sites: sign in once, then stay headless
+
+The default is a **headless browser with no permission prompts, no window and no `DISPLAY`**. Login
+state comes from a persistent profile instead of borrowing your daily browser:
+
+```bash
+jeva login --url https://example.com/login          # one time: a window opens, you sign in
+jeva run "https://example.com/orders" "Download last month's invoices" \
+  --profile-dir ~/.local/share/jeva/chrome          # headless from here on
+```
+
+Chrome's "allow remote debugging" switch is deliberately *not* the mechanism: that prompt has to be
+approved per connection, which is the opposite of unattended. A persistent profile needs no
+approval, and it is a separate throwaway profile -- your own bookmarks, passwords and tabs are
+never touched. Two caveats: let Chrome close normally (Chrome flushes cookies in batches, so a
+killed process loses them, which `jeva login` handles), and the site must set a cookie with an
+expiry -- a pure session cookie is not persisted by any browser.
+
 The loop exists because a decision is only safe to execute if something checks it:
 
 | Guard | What it prevents |

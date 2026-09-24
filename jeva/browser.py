@@ -62,9 +62,6 @@ CHROME_FLAGS = [
     "--disable-gpu", "--disable-gpu-compositing", "--disable-software-rasterizer",
     "--disable-accelerated-2d-canvas", "--disable-features=VizDisplayCompositor",
     "--hide-scrollbars", "--proxy-server='direct://'", "--proxy-bypass-list=*",
-    # Only what fits the viewport is observable, so a laptop-sized window matters:
-    # the 800x600 headless default hides the bottom of an ordinary form.
-    "--window-size=1280,900",
 ]
 
 
@@ -123,10 +120,54 @@ def _normalize_for_input(text: str) -> str | None:
     return f"{hour:02d}:{minute}"
 
 
-def launch_chrome(port: int = 9333, profile: str = "/tmp/jeva-chrome-profile"):
-    """Start a throwaway headless Chrome and return (process, websocket url)."""
-    shutil.rmtree(profile, ignore_errors=True)
-    flags = [f"--remote-debugging-port={port}", f"--user-data-dir={profile}", *CHROME_FLAGS]
+# Chrome 147+ stopped serving /json/* for the default profile, so the websocket path has to come
+# from the file Chrome itself writes next to the profile: line 1 is the port, line 2 the path.
+CHROME_PROFILES = ("~/.config/google-chrome", "~/.config/chromium", "~/.config/chromium-browser",
+                   "~/.config/microsoft-edge")
+
+
+def chrome_ws_url(profile: str | None = None) -> str:
+    """Find the DevTools websocket of an already-running Chrome, for reusing its logged-in session.
+
+    Requires remote debugging to be allowed once in that browser (chrome://inspect/#remote-debugging).
+    """
+    candidates = [profile] if profile else list(CHROME_PROFILES)
+    tried = []
+    for raw in candidates:
+        base = Path(raw).expanduser()
+        tried.append(str(base))
+        marker = base / "DevToolsActivePort"
+        if not marker.is_file():
+            continue
+        port, _path = (marker.read_text().splitlines() + ["", ""])[:2]
+        if not port.strip().isdigit():
+            continue
+        return f"ws://127.0.0.1:{port.strip()}" + (_path.strip() or "/")
+    raise RuntimeError(
+        "No running Chrome with remote debugging found. Checked: " + ", ".join(tried) +
+        ". Allow it once at chrome://inspect/#remote-debugging, or pass --cdp-ws explicitly.")
+
+
+def launch_chrome(port: int = 9333, profile: str = "/tmp/jeva-chrome-profile", *,
+                  fresh: bool = True, headless: bool = True, window: str = "1280,900",
+                  url: str | None = None):
+    """Start a Chrome and return ``(process, websocket url)``.
+
+    ``fresh=True`` wipes the profile first, which is right for a throwaway run. Pass
+    ``fresh=False`` with a directory of your own to keep cookies between runs: sign in once in
+    that profile (``jeva login``) and later headless runs reuse the session -- no per-run
+    permission prompt, unlike attaching to a Chrome you are using.
+
+    Headless is the default precisely because it needs no approval from anyone.
+    """
+    if fresh:
+        shutil.rmtree(profile, ignore_errors=True)
+    flags = [f"--remote-debugging-port={port}", f"--user-data-dir={profile}",
+             f"--window-size={window}", *CHROME_FLAGS]
+    if not headless:
+        flags = [f for f in flags if not f.startswith("--headless")]
+    if url:
+        flags.append(url)
     binary = (os.environ.get("CHROME") or shutil.which("google-chrome")
               or shutil.which("chromium") or shutil.which("chromium-browser"))
     if not binary:
@@ -140,6 +181,27 @@ def launch_chrome(port: int = 9333, profile: str = "/tmp/jeva-chrome-profile"):
             time.sleep(0.25)
     proc.kill()
     raise RuntimeError("Chrome did not become ready in 20s")
+
+
+def close_chrome(proc, cdp, timeout: float = 20) -> None:
+    """Shut Chrome down the way it expects, so cookies reach the profile on disk.
+
+    Chrome writes cookies in batches; SIGTERM skips that flush. A run that signed in and was
+    killed can therefore come back signed out, which looks exactly like the profile not working.
+    ``Browser.close`` is the graceful request, and termination is only the fallback.
+    """
+    try:
+        cdp("Browser.close")
+    except Exception:                                                 # noqa: BLE001
+        pass
+    if proc is not None:
+        try:
+            proc.wait(timeout=timeout)
+        except Exception:                                             # noqa: BLE001
+            try:
+                proc.terminate()
+            except Exception:                                         # noqa: BLE001
+                pass
 
 
 class StalePage(ValueError):

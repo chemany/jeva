@@ -20,7 +20,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 
-from .browser import CDP, Browser, StalePage, action_space, launch_chrome, to_page
+from .browser import (CDP, Browser, StalePage, action_space, chrome_ws_url,   # noqa: F401
+                      close_chrome, launch_chrome, to_page)
 from .client import Jeva
 
 # An observation is only useful if a decision can act on it; these bound the loop instead of
@@ -84,7 +85,8 @@ class Agent:
                  max_steps: int = DEFAULT_MAX_STEPS, port: int = 9333,
                  profile: str = "/tmp/jeva-agent-profile", chrome: str | None = None,
                  screenshot_dir: str | None = None, cdp_ws: str | None = None,
-                 settle: float = 0.6):
+                 attach: str | bool | None = None, settle: float = 0.6,
+                 fresh: bool = True):
         if not goal.strip():
             raise ValueError("Supply a goal")
         self.url = url
@@ -97,14 +99,15 @@ class Agent:
             self.screenshot_dir.mkdir(parents=True, exist_ok=True)
 
         self._proc = None
-        if cdp_ws:
+        if cdp_ws or attach:
             # Attach to a browser the caller already runs -- the way to reuse a logged-in session.
-            self.cdp = CDP(cdp_ws)
+            # ``attach`` may be True (auto-discover) or a profile directory.
+            self.cdp = CDP(cdp_ws or chrome_ws_url(attach if isinstance(attach, str) else None))
         else:
             import os
             if chrome:
                 os.environ["CHROME"] = chrome
-            self._proc, ws = launch_chrome(port=port, profile=profile)
+            self._proc, ws = launch_chrome(port=port, profile=profile, fresh=fresh)
             self.cdp = CDP(ws)
         self.browser = Browser(self.cdp, url)
         self.history: list[Step] = []
@@ -232,10 +235,9 @@ class Agent:
         except Exception:                                             # noqa: BLE001
             pass
         if self._proc is not None:
-            try:
-                self._proc.terminate()
-            except Exception:                                         # noqa: BLE001
-                pass
+            # Graceful shutdown matters with a persistent profile: the cookies of this run only
+            # reach disk if Chrome is asked to close rather than killed.
+            close_chrome(self._proc, self.cdp)
             self._proc = None
 
     def __enter__(self):
