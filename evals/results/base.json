@@ -1,1272 +1,34 @@
 {
   "n": 100,
-  "ok": 8,
-  "rate": 0.08,
+  "ok": 10,
+  "rate": 0.1,
   "by_kind": {
-    "blocked": [
-      0,
-      13
-    ],
     "wiki": [
-      6,
-      14
+      1,
+      7
     ],
-    "contact": [
-      2,
-      13
+    "blocked": [
+      9,
+      9
     ],
-    "flight": [
+    "multi": [
       0,
-      32
+      31
     ],
     "hotel": [
       0,
-      28
+      26
+    ],
+    "flight": [
+      0,
+      21
+    ],
+    "contact": [
+      0,
+      6
     ]
   },
   "fails": [
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "wiki",
-      "goal": "Find and open the Wikipedia article about Photosynthesis.",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search"
-      ],
-      "final": "wiki.html?q="
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from li.wei@example.org with the name Chen Yu and the message 'Pleas",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name"
-      ],
-      "final": "contact.html?"
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Paris to Berlin on March 3, 2026, for 3 adults in Economy, then su",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=First&pax=1+adult&to=Berlin"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Osaka to New York on October 5, 2026, for 1 adult in Business, the",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=First&pax=1+adult&to=New+York&dep=Berlin"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Tokyo to Zurich on October 5, 2026, for 1 adult in Premium economy",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=Economy&pax=1+adult&from=Osaka&to=Tokyo"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Tokyo to Osaka on September 20, 2026, for 3 adults in First, then ",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=Economy&pax=2+adults&from=Berlin&to=Osaka&dep=Sept"
-    },
-    {
-      "kind": "wiki",
-      "goal": "Find and open the Wikipedia article about Photosynthesis.",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search"
-      ],
-      "final": "wiki.html?q="
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find oneway flights from Berlin to Paris on October 5, 2026, for 1 adult in First, then su",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way"
-      ],
-      "final": "flights.html?trip=oneway&cabin=Economy&pax=3+adults&dep=Berlin"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from New York to Tokyo on March 3, 2026, for 3 adults in Business, then",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Open Where from?",
-        "CLICK:Open Where from?",
-        "CLICK:Open Where from?",
-        "CLICK:Open Where from?",
-        "CLICK:Open Where from?",
-        "CLICK:Open Where from?"
-      ],
-      "final": "flights.html?trip=round&cabin=Business&pax=1+adult&dep=Tokyo"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Osaka to London on October 5, 2026, for 1 adult in First, then sub",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=Business&pax=2+adults&from=Osaka&to=Zurich&dep=To"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from London to Paris on March 3, 2026, for 3 adults in Economy, then su",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=Business&pax=3+adults&to=Paris"
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from jason@example.com with the name Li Wei and the message 'We woul",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name"
-      ],
-      "final": "contact.html?msg=We+would+like+pricing+and+lead+times."
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Tokyo with free cancellation only, at most $100 per night, sorted by price ",
-      "status": "ready",
-      "steps": [
-        "SELECT:Max price per night → $1",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "SELECT:Max price per night → $5",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?city=Tokyo&max=%24500&sort=Relevance&cancel=0"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Osaka with free cancellation only, at most $200 per night, sorted by rating",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%2450&sort=Rating&cancel=0"
-    },
-    {
-      "kind": "wiki",
-      "goal": "Find and open the Wikipedia article about Photoperiodism.",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search"
-      ],
-      "final": "wiki.html?q="
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from jason@example.com with the name Maria Lopez and the message 'Pl",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name"
-      ],
-      "final": "contact.html?email=jason@example.com&agree=1"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Paris with free cancellation only, at most $500 per night, sorted by price ",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%24100&sort=Relevance&cancel=0"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Osaka with free cancellation only, at most $200 per night, sorted by rating",
-      "status": "ready",
-      "steps": [
-        "CLICK:Free cancellation only",
-        "SELECT:Sort by → Rating",
-        "SELECT:Max price per night → $2",
-        "SELECT:Max price per night → $5",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "SELECT:Max price per night → $2",
-        "SELECT:Max price per night → $5",
-        "SELECT:Max price per night → $2"
-      ],
-      "final": "hotels.html?city=Osaka&max=%2450&sort=Relevance&cancel=0"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Tokyo with free cancellation only, at most $200 per night, sorted by rating",
-      "status": "ready",
-      "steps": [
-        "SELECT:Max price per night → $2",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "SELECT:Max price per night → $5",
-        "SELECT:Max price per night → $2",
-        "SELECT:Max price per night → $5",
-        "SELECT:Max price per night → $2",
-        "CLICK:Open City",
-        "SELECT:Max price per night → $5",
-        "SELECT:Max price per night → $2"
-      ],
-      "final": "hotels.html?city=Tokyo&max=%24100&sort=Rating&cancel=1"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Zurich to Berlin on October 5, 2026, for 3 adults in Economy, then",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=First&pax=1+adult&from=Zurich&to=Berlin"
-    },
-    {
-      "kind": "wiki",
-      "goal": "Find and open the Wikipedia article about Photoperiodism.",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search"
-      ],
-      "final": "wiki.html?q="
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from li.wei@example.org with the name Maria Lopez and the message 'W",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name"
-      ],
-      "final": "contact.html?email=li.wei@example.org"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Zurich with free cancellation only, at most $100 per night, sorted by price",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?city=Zurich&max=%24100&sort=Rating&cancel=0"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Osaka with free cancellation only, at most $100 per night, sorted by rating",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%24500&sort=Relevance&cancel=0"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Paris with free cancellation only, at most $50 per night, sorted by price l",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%2450&sort=Relevance&cancel=1"
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Paris with free cancellation only, at most $50 per night, sorted by rating,",
-      "status": "ready",
-      "steps": [
-        "SELECT:Max price per night → $5",
-        "SELECT:Max price per night → $1",
-        "SELECT:Max price per night → $5",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "SELECT:Max price per night → $1",
-        "SELECT:Max price per night → $5"
-      ],
-      "final": "hotels.html?city=Paris&max=%24500&sort=Rating&cancel=1"
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from maria@example.net with the name Jason Zhang and the message 'We",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name"
-      ],
-      "final": "contact.html?email=maria@example.net&msg=We+would+like+pricing+and+lead+times."
-    },
-    {
-      "kind": "wiki",
-      "goal": "Find and open the Wikipedia article about Photoperiodism.",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search"
-      ],
-      "final": "wiki.html?q="
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from li.wei@example.org with the name Jason Zhang and the message 'W",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name"
-      ],
-      "final": "contact.html?email=li.wei@example.org&agree=1"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find oneway flights from Osaka to New York on March 3, 2026, for 3 adults in Premium econo",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=Economy&pax=2+adults"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Berlin to New York on March 3, 2026, for 1 adult in First, then su",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=Business&pax=1+adult&from=Osaka&to=New+York"
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from maria@example.net with the name Jason Zhang and the message 'Pl",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name"
-      ],
-      "final": "contact.html?email=maria@example.net"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from London to Tokyo on October 5, 2026, for 1 adult in Premium economy",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=Business&pax=1+adult&from=Zurich&to=Tokyo&dep=Tok"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find oneway flights from Osaka to Zurich on September 20, 2026, for 2 adults in First, the",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=First&pax=1+adult&from=London&to=Tokyo&dep=Septemb"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Zurich to London on October 5, 2026, for 1 adult in Business, then",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?"
-      ],
-      "final": "flights.html?trip=round&cabin=First&pax=2+adults&from=Osaka&dep=October+5,+2026"
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from maria@example.net with the name Jason Zhang and the message 'Co",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Email",
-        "CLICK:Open Full name",
-        "CLICK:Open Email",
-        "CLICK:Open Email",
-        "CLICK:Open Email",
-        "CLICK:Open Full name"
-      ],
-      "final": "contact.html?name=Jason+Zhang"
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find oneway flights from Tokyo to Osaka on September 20, 2026, for 3 adults in Business, t",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way"
-      ],
-      "final": "flights.html?trip=oneway&cabin=First&pax=1+adult&dep=September+20,+2026"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Osaka to Zurich on March 3, 2026, for 3 adults in Economy, then su",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=Premium+economy&pax=1+adult&from=Osaka&to=Paris&de"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find oneway flights from Berlin to Osaka on September 20, 2026, for 2 adults in Economy, t",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=First&pax=1+adult&dep=New+York"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Berlin with free cancellation only, at most $500 per night, sorted by ratin",
-      "status": "ready",
-      "steps": [
-        "CLICK:Free cancellation only",
-        "CLICK:Open City",
-        "SELECT:Sort by → Rating",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "SELECT:Max price per night → $5",
-        "SELECT:Max price per night → $2",
-        "SELECT:Max price per night → $5"
-      ],
-      "final": "hotels.html?city=Berlin&max=%2450&sort=Relevance&cancel=0"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find oneway flights from Berlin to Zurich on September 20, 2026, for 1 adult in First, the",
-      "status": "ready",
-      "steps": [
-        "CLICK:One way",
-        "CLICK:One way",
-        "CLICK:One way",
-        "CLICK:One way",
-        "CLICK:One way",
-        "CLICK:One way",
-        "CLICK:One way",
-        "CLICK:One way",
-        "CLICK:One way",
-        "CLICK:One way"
-      ],
-      "final": "flights.html?trip=round&cabin=First&pax=1+adult&from=Paris&dep=Osaka"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Tokyo with free cancellation only, at most $100 per night, sorted by rating",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%2450&sort=Relevance&cancel=0"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find oneway flights from Osaka to Berlin on October 5, 2026, for 1 adult in First, then su",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?"
-      ],
-      "final": "flights.html?trip=oneway&cabin=First&pax=1+adult&from=Osaka"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Berlin to Zurich on September 20, 2026, for 2 adults in Premium ec",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=Business&pax=2+adults"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in London with free cancellation only, at most $50 per night, sorted by rating",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%2450&sort=Relevance&cancel=1"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Zurich with free cancellation only, at most $100 per night, sorted by ratin",
-      "status": "ready",
-      "steps": [
-        "CLICK:Free cancellation only",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Search hotels",
-        "CLICK:Change search",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html"
-    },
-    {
-      "kind": "wiki",
-      "goal": "Find and open the Wikipedia article about Chlorophyll.",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search"
-      ],
-      "final": "wiki.html?q="
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Paris with free cancellation only, at most $100 per night, sorted by price ",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%24500&sort=Relevance&cancel=0"
-    },
-    {
-      "kind": "wiki",
-      "goal": "Find and open the Wikipedia article about Photoperiodism.",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search",
-        "CLICK:Open Search"
-      ],
-      "final": "wiki.html?q="
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Paris with free cancellation only, at most $50 per night, sorted by rating,",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%24500&sort=Rating&cancel=1"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in New York with free cancellation only, at most $500 per night, sorted by pri",
-      "status": "ready",
-      "steps": [
-        "SELECT:Max price per night → $5",
-        "CLICK:Search hotels",
-        "CLICK:Change search",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in London with free cancellation only, at most $100 per night, sorted by ratin",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%24500&sort=Relevance&cancel=1"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in New York with free cancellation only, at most $200 per night, sorted by pri",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%24200&sort=Rating&cancel=0"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Paris with free cancellation only, at most $50 per night, sorted by rating,",
-      "status": "ready",
-      "steps": [
-        "SELECT:Sort by → Relevance",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Search hotels"
-      ],
-      "final": "hotel-results.html?city=Paris&max=%2450&sort=Relevance&cancel=1"
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from li.wei@example.org with the name Li Wei and the message 'Please",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Email",
-        "CLICK:Open Full name",
-        "CLICK:Open Email",
-        "CLICK:Open Email"
-      ],
-      "final": "contact.html?name=Li+Wei"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Paris to New York on March 3, 2026, for 1 adult in Premium economy",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=First&pax=3+adults"
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from li.wei@example.org with the name Jason Zhang and the message 'P",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Email",
-        "CLICK:Open Email",
-        "CLICK:Open Email",
-        "CLICK:Open Email",
-        "CLICK:Open Email",
-        "CLICK:Open Email"
-      ],
-      "final": "contact.html?name=Jason+Zhang"
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Osaka to London on October 5, 2026, for 1 adult in Business, then ",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=Business&pax=1+adult&from=Osaka&to=London"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find oneway flights from Zurich to New York on October 5, 2026, for 1 adult in Premium eco",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=First&pax=2+adults&from=Zurich&to=New+York&dep=Ber"
-    },
     {
       "kind": "wiki",
       "goal": "Find and open the Wikipedia article about Photosystem II.",
@@ -1286,103 +48,1022 @@
       "final": "wiki.html?q="
     },
     {
+      "kind": "multi",
+      "goal": "Order a pizza with cheese, onions and direct delivery, then place the order. Add the note ",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=cheese&pre=onion"
+    },
+    {
+      "kind": "wiki",
+      "goal": "Find and open the Wikipedia article about Photosynthesis.",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search"
+      ],
+      "final": "wiki.html?q="
+    },
+    {
       "kind": "hotel",
-      "goal": "Find hotels in Tokyo with free cancellation only, at most $100 per night, sorted by price ",
+      "goal": "Find hotels in Osaka with free cancellation only, at most $500 per night, sorted by rating",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Osaka&max=%24100&sort=Rating&cancel=1"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Osaka to New York on October 5, 2026, for 2 adults in Economy, th",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:One way",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?"
+      ],
+      "final": "flights.html?trip=round&cabin=Premium+economy&pax=3+adults&dep=Zurich"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Paris with free cancellation only, at most $200 per night, sorted by price ",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Paris&max=%24100&sort=Relevance&cancel=0"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Berlin to New York on September 20, 2026, for 3 adults in Busines",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Premium+economy&pax=1+adult"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with pepperoni, onions and gift wrapping, then place the order. Delivery is ",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=onion"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Paris to Tokyo on March 3, 2026, for 1 adult in Business, then su",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Where from?",
+        "CLICK:One way",
+        "CLICK:Search",
+        "CLICK:Change search",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?"
+      ],
+      "final": "flights.html"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in New York with free cancellation only, at most $500 per night, sorted by pri",
       "status": "ready",
       "steps": [
         "CLICK:Open City",
         "CLICK:Open City",
         "CLICK:Open City",
-        "CLICK:Search hotels",
-        "CLICK:Change search",
+        "CLICK:Open City",
+        "CLICK:Open City",
         "CLICK:Open City",
         "CLICK:Open City",
         "CLICK:Open City",
         "CLICK:Open City",
         "CLICK:Open City"
       ],
-      "final": "hotels.html"
+      "final": "hotels.html?max=%24200&sort=Rating&cancel=1"
+    },
+    {
+      "kind": "multi",
+      "goal": "Add the note \"Extra napkins please\". Order a pizza with cheese, pepperoni and olives, with",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Extra Cheese",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=pepperoni&pre=olives&pre=onion&when=13:05&note=Extra+napkins+plea"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in New York with free cancellation only, at most $50 per night, sorted by pric",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City"
+      ],
+      "final": "hotels.html?max=%2450&sort=Price+low+to+high&cancel=0"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with olives, cheese and gift wrapping, then place the order.",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=cheese"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Paris with free cancellation only, at most $50 per night, sorted by price l",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Paris&max=%2450&sort=Price+low+to+high&cancel=0"
+    },
+    {
+      "kind": "multi",
+      "goal": "Include a note saying \"Leave at the door\". Order a pizza with pepperoni, cheese and gift w",
+      "status": "ready",
+      "steps": [
+        "CLICK:Pepperoni",
+        "CLICK:Open Your name:",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche"
+      ],
+      "final": "multi.html"
+    },
+    {
+      "kind": "contact",
+      "goal": "Send the contact form from jason@example.com with the name Chen Yu and the message 'Could ",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Message",
+        "CLICK:Open Message",
+        "CLICK:Open Message",
+        "CLICK:Open Message",
+        "CLICK:Open Message",
+        "CLICK:Open Message",
+        "CLICK:Open Message",
+        "CLICK:Open Message",
+        "CLICK:Open Message",
+        "CLICK:Open Message"
+      ],
+      "final": "contact.html?name=Chen+Yu&email=jason@example.com&agree=1"
+    },
+    {
+      "kind": "multi",
+      "goal": "Leave a note that says \"Call on arrival\". Order a pizza with cheese, olives and direct del",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=olives&note=Call+on+arrival"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Tokyo with free cancellation only, at most $500 per night, sorted by rating",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City"
+      ],
+      "final": "hotels.html?max=%24100&sort=Relevance&cancel=1"
     },
     {
       "kind": "flight",
-      "goal": "Find oneway flights from Zurich to New York on September 20, 2026, for 2 adults in Economy",
+      "goal": "Find oneway flights from Paris to London on October 5, 2026, for 1 adult in Economy, then ",
+      "status": "ready",
+      "steps": [
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Round trip",
+        "CLICK:Open Where from?",
+        "CLICK:Round trip",
+        "CLICK:One way",
+        "CLICK:Round trip"
+      ],
+      "final": "flights.html?trip=round&cabin=First&pax=1+adult&to=London"
+    },
+    {
+      "kind": "multi",
+      "goal": "Include a note saying \"Ring the bell\". Order a pizza with mushrooms, onions and direct del",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=mushroom&pre=onion&when=13:05"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Osaka with free cancellation only, at most $50 per night, sorted by rating,",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City"
+      ],
+      "final": "hotels.html?max=%24200&sort=Relevance&cancel=1"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with pepperoni and cheese, then place the order.",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Paris with free cancellation only, at most $200 per night, sorted by rating",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City"
+      ],
+      "final": "hotels.html?max=%2450&sort=Relevance&cancel=1"
+    },
+    {
+      "kind": "multi",
+      "goal": "Add the note \"Leave at the door\". Order a pizza with mushrooms and olives, for delivery ar",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?when=8:30+pm&note=Leave+at+the+door"
+    },
+    {
+      "kind": "wiki",
+      "goal": "Find and open the Wikipedia article about Photoperiodism.",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search"
+      ],
+      "final": "wiki.html?q="
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Zurich with free cancellation only, at most $100 per night, sorted by ratin",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City"
+      ],
+      "final": "hotels.html?max=%2450&sort=Price+low+to+high&cancel=0"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Berlin to London on March 3, 2026, for 2 adults in First, then su",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Premium+economy&pax=1+adult&from=London"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Osaka to London on October 5, 2026, for 2 adults in Premium econo",
       "status": "ready",
       "steps": [
         "CLICK:One way",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
         "CLICK:One way",
-        "CLICK:One way",
-        "CLICK:One way",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Premium+economy&pax=2+adults&dep=Osaka"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Tokyo to London on March 3, 2026, for 3 adults in Economy, then s",
+      "status": "ready",
+      "steps": [
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Round trip"
+      ],
+      "final": "flights.html?trip=round&cabin=Business&pax=3+adults&to=London"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in New York with free cancellation only, at most $100 per night, sorted by rat",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City"
+      ],
+      "final": "hotels.html?max=%24500&sort=Rating&cancel=1"
+    },
+    {
+      "kind": "multi",
+      "goal": "Include a note saying \"Ring the bell\". Order a pizza with pepperoni and cheese, for delive",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=cheese"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Berlin with free cancellation only, at most $50 per night, sorted by rating",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City"
+      ],
+      "final": "hotels.html?max=%24100&sort=Price+low+to+high&cancel=1"
+    },
+    {
+      "kind": "wiki",
+      "goal": "Find and open the Wikipedia article about Photosynthesis.",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search"
+      ],
+      "final": "wiki.html?q="
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Paris with free cancellation only, at most $100 per night, sorted by rating",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City"
+      ],
+      "final": "hotels.html?max=%24100&sort=Rating&cancel=0"
+    },
+    {
+      "kind": "multi",
+      "goal": "Include a note saying \"Call on arrival\". Order a pizza with cheese, onions and a refundabl",
+      "status": "ready",
+      "steps": [
+        "CLICK:Extra Cheese",
+        "CLICK:Extra Cheese",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Your name:",
+        "CLICK:Open Note for the kitche"
+      ],
+      "final": "multi.html?pre=cheese"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with pepperoni and mushrooms, then place the order. Include a note saying \"L",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Extra Cheese",
+        "CLICK:Mushroom",
+        "CLICK:Pepperoni",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?note=Leave+at+the+door"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from Tokyo to Paris on September 20, 2026, for 2 adults in First, then ",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
+        "CLICK:Open Where to?",
         "CLICK:Open Where to?",
         "CLICK:Open Where to?"
       ],
       "final": "flights.html?trip=oneway&cabin=Business&pax=1+adult&from=Zurich"
     },
     {
-      "kind": "flight",
-      "goal": "Find round flights from Berlin to Osaka on October 5, 2026, for 1 adult in Premium economy",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=First&pax=2+adults&to=Berlin&dep=October+5,+2026"
+      "kind": "hotel",
+      "goal": "Find hotels in Berlin with free cancellation only, at most $500 per night, sorted by price",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Berlin&max=%24100&sort=Rating&cancel=1"
     },
     {
       "kind": "flight",
-      "goal": "Find oneway flights from Zurich to Berlin on October 5, 2026, for 3 adults in First, then ",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=Premium+economy&pax=3+adults"
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
+      "goal": "Find oneway flights from New York to London on October 5, 2026, for 2 adults in Business, ",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "flights.html?trip=oneway&cabin=Premium+economy&pax=3+adults&from=New+York&to=Lon"
     },
     {
       "kind": "hotel",
-      "goal": "Find hotels in London with free cancellation only, at most $50 per night, sorted by rating",
+      "goal": "Find hotels in Tokyo with free cancellation only, at most $50 per night, sorted by price l",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Tokyo&max=%24100&sort=Rating&cancel=0"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Osaka to Paris on March 3, 2026, for 3 adults in Premium economy,",
+      "status": "invalid_action",
+      "steps": [
+        "CLICK:Round trip",
+        "CLICK:One way",
+        "CLICK:One way"
+      ],
+      "final": "flights.html?trip=round&cabin=Business&pax=3+adults&dep=Osaka"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in New York with free cancellation only, at most $100 per night, sorted by pri",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=New+York&max=%24500&sort=Relevance&cancel=1"
+    },
+    {
+      "kind": "multi",
+      "goal": "Include a note saying \"Extra napkins please\". Order a pizza with pepperoni, olives and gif",
       "status": "ready",
       "steps": [
-        "SELECT:Max price per night → $5",
-        "SELECT:Sort by → Relevance",
-        "SELECT:Sort by → Rating",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=pepperoni&pre=olives"
+    },
+    {
+      "kind": "multi",
+      "goal": "Add the note \"Extra napkins please\". Order a pizza with mushrooms, cheese and direct deliv",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with onions, olives and cheese, then place the order.",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=onion"
+    },
+    {
+      "kind": "multi",
+      "goal": "Add the note \"Ring the bell\". Order a pizza with onions, cheese and gift wrapping, for del",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?when=9:00+AM"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find round flights from Berlin to Tokyo on March 3, 2026, for 3 adults in Premium economy,",
+      "status": "ready",
+      "steps": [
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Economy&pax=3+adults&to=New+York"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with onions, olives, cheese and a refundable booking, then place the order. ",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=onion&note=Ring+the+bell"
+    },
+    {
+      "kind": "contact",
+      "goal": "Send the contact form from maria@example.net with the name Maria Lopez and the message 'We",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name"
+      ],
+      "final": "contact.html?"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Zurich to London on September 20, 2026, for 3 adults in Premium e",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "flights.html?trip=oneway&cabin=First&pax=1+adult&from=Zurich&to=Osaka&dep=Septem"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Osaka to Tokyo on October 5, 2026, for 2 adults in Premium econom",
+      "status": "ready",
+      "steps": [
+        "CLICK:One way",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Economy&pax=2+adults"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Berlin with free cancellation only, at most $500 per night, sorted by price",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Berlin&max=%24100&sort=Price+low+to+high&cancel=0"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with mushrooms, onions and direct delivery, then place the order. Delivery m",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?when=13:05"
+    },
+    {
+      "kind": "multi",
+      "goal": "Add the note \"Leave at the door\". Order a pizza with pepperoni, onions and gift wrapping, ",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?note=Leave+at+the+door"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Paris to Berlin on October 5, 2026, for 1 adult in Premium econom",
+      "status": "ready",
+      "steps": [
+        "CLICK:One way",
+        "CLICK:One way",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Business&pax=2+adults"
+    },
+    {
+      "kind": "contact",
+      "goal": "Send the contact form from jason@example.com with the name Maria Lopez and the message 'We",
+      "status": "blocked",
+      "steps": [
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name",
+        "CLICK:Open Full name"
+      ],
+      "final": "contact.html?msg=We+would+like+pricing+and+lead+times.&agree=1"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Zurich with free cancellation only, at most $100 per night, sorted by price",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Zurich&max=%24200&sort=Rating&cancel=0"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Osaka to New York on September 20, 2026, for 1 adult in Premium e",
+      "status": "ready",
+      "steps": [
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip",
+        "CLICK:Round trip"
+      ],
+      "final": "flights.html?trip=round&cabin=Economy&pax=3+adults&to=New+York&dep=September+20,"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Paris with free cancellation only, at most $500 per night, sorted by price ",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Paris&max=%24100&sort=Price+low+to+high&cancel=0"
+    },
+    {
+      "kind": "wiki",
+      "goal": "Find and open the Wikipedia article about Photoperiodism.",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search"
+      ],
+      "final": "wiki.html?q="
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with mushrooms, onions, pepperoni and a refundable booking, then place the o",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=onion"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Tokyo with free cancellation only, at most $200 per night, sorted by rating",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Tokyo&max=%24200&sort=Relevance&cancel=0"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from New York to Berlin on March 3, 2026, for 1 adult in Premium econo",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Economy&pax=3+adults"
+    },
+    {
+      "kind": "multi",
+      "goal": "Put \"Call on arrival\" in the notes. Order a pizza with mushrooms and onions, then place th",
+      "status": "ready",
+      "steps": [
+        "CLICK:Mushroom",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche",
+        "CLICK:Open Note for the kitche"
+      ],
+      "final": "multi.html"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with cheese and mushrooms, then place the order. Delivery is at 8:30 pm. Con",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Osaka with free cancellation only, at most $100 per night, sorted by price ",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
         "CLICK:Open City",
         "CLICK:Open City",
         "CLICK:Open City",
@@ -1391,61 +1072,156 @@
         "CLICK:Open City",
         "CLICK:Open City"
       ],
-      "final": "hotels.html?city=London&max=%24100&sort=Price+low+to+high&cancel=1"
+      "final": "hotels.html?max=%24500&sort=Rating&cancel=0"
     },
     {
-      "kind": "flight",
-      "goal": "Find round flights from Osaka to Zurich on March 3, 2026, for 3 adults in Economy, then su",
+      "kind": "contact",
+      "goal": "Send the contact form from maria@example.net with the name Li Wei and the message 'Could y",
       "status": "ready",
       "steps": [
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "TYPE_TEXT:Where to?"
+        "CLICK:I agree to the privacy p",
+        "CLICK:I agree to the privacy p",
+        "CLICK:Open Email",
+        "CLICK:Open Email",
+        "CLICK:Open Email",
+        "CLICK:Open Full name",
+        "CLICK:Open Email",
+        "CLICK:Open Message",
+        "CLICK:Open Message",
+        "CLICK:I agree to the privacy p"
       ],
-      "final": "flights.html?trip=round&cabin=First&pax=1+adult&from=Osaka"
+      "final": "contact.html?name=Li+Wei&msg=Could+you+send+the+technical+datasheet?&agree=1"
+    },
+    {
+      "kind": "wiki",
+      "goal": "Find and open the Wikipedia article about Photosynthesis.",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search",
+        "CLICK:Open Search"
+      ],
+      "final": "wiki.html?q="
     },
     {
       "kind": "hotel",
-      "goal": "Find hotels in Berlin with free cancellation only, at most $200 per night, sorted by ratin",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "SELECT:Max price per night → $2",
-        "SELECT:Max price per night → $5",
-        "SELECT:Max price per night → $2",
-        "CLICK:Open City",
-        "SELECT:Sort by → Rating",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Search hotels"
-      ],
-      "final": "hotel-results.html?city=&max=%24200&sort=Rating&cancel=1"
+      "goal": "Find hotels in Osaka with free cancellation only, at most $50 per night, sorted by price l",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Osaka&max=%24100&sort=Relevance&cancel=0"
     },
     {
-      "kind": "flight",
-      "goal": "Find oneway flights from Berlin to Zurich on October 5, 2026, for 1 adult in Premium econo",
+      "kind": "multi",
+      "goal": "Order a pizza with pepperoni, onions and cheese, for delivery around 13:05, then place the",
       "status": "ready",
       "steps": [
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way",
-        "CLICK:Round trip",
-        "CLICK:One way"
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
       ],
-      "final": "flights.html?trip=oneway&cabin=First&pax=1+adult&to=Tokyo"
+      "final": "multi.html?pre=pepperoni&pre=cheese&pre=olives"
+    },
+    {
+      "kind": "contact",
+      "goal": "Send the contact form from maria@example.net with the name Maria Lopez and the message 'We",
+      "status": "blocked",
+      "steps": [
+        "CLICK:I agree to the privacy p"
+      ],
+      "final": "contact.html?name=Maria+Lopez&agree=1"
+    },
+    {
+      "kind": "contact",
+      "goal": "Send the contact form from jason@example.com with the name Jason Zhang and the message 'Pl",
+      "status": "blocked",
+      "steps": [],
+      "final": "contact.html?msg=Please+send+a+quotation+for+your+services.&agree=1"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Osaka with free cancellation only, at most $50 per night, sorted by rating,",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City",
+        "CLICK:Open City"
+      ],
+      "final": "hotels.html?max=%2450&sort=Price+low+to+high&cancel=0"
+    },
+    {
+      "kind": "multi",
+      "goal": "Add the note \"Call on arrival\". Order a pizza with onions and olives, then place the order",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=cheese&note=Call+on+arrival"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with olives, mushrooms and a refundable booking, then place the order. Conta",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=mushroom"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with pepperoni and mushrooms, then place the order. Contact Jason Zhang, 555",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?email=li.wei@example.org"
     },
     {
       "kind": "hotel",
@@ -1463,11 +1239,176 @@
         "CLICK:Open City",
         "CLICK:Open City"
       ],
-      "final": "hotels.html?max=%2450&sort=Price+low+to+high&cancel=0"
+      "final": "hotels.html?max=%24200&sort=Relevance&cancel=1"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with pepperoni, mushrooms and gift wrapping, then place the order. Include a",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html"
     },
     {
       "kind": "hotel",
-      "goal": "Find hotels in New York with free cancellation only, at most $100 per night, sorted by rat",
+      "goal": "Find hotels in Tokyo with free cancellation only, at most $500 per night, sorted by price ",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Tokyo&max=%2450&sort=Rating&cancel=0"
+    },
+    {
+      "kind": "multi",
+      "goal": "Leave a note that says \"Leave at the door\". Order a pizza with mushrooms, onions, cheese a",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Extra Cheese",
+        "CLICK:Extra Cheese",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Extra Cheese",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=pepperoni&when=19:45&note=Leave+at+the+door"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with pepperoni and onions, then place the order. Delivery must be no earlier",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open E-mail address:",
+        "CLICK:Open E-mail address:",
+        "CLICK:Open E-mail address:",
+        "CLICK:Open E-mail address:",
+        "CLICK:Open E-mail address:",
+        "CLICK:Open E-mail address:",
+        "CLICK:Open E-mail address:",
+        "CLICK:Open E-mail address:",
+        "CLICK:Open E-mail address:",
+        "CLICK:Open E-mail address:"
+      ],
+      "final": "multi.html?name=Chen+Yu&phone=555-0100"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Zurich to Berlin on October 5, 2026, for 1 adult in First, then s",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "flights.html?trip=oneway&cabin=Economy&pax=2+adults&from=Zurich&to=Berlin"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from New York to Osaka on October 5, 2026, for 2 adults in Economy, th",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Economy&pax=3+adults&to=Osaka"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with olives, cheese and a refundable booking, then place the order. Reach Li",
+      "status": "ready",
+      "steps": [
+        "CLICK:Extra Cheese",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Extra Cheese",
+        "CLICK:Extra Cheese",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=cheese"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Zurich to London on March 3, 2026, for 3 adults in First, then su",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Premium+economy&pax=1+adult"
+    },
+    {
+      "kind": "flight",
+      "goal": "Find oneway flights from Berlin to Osaka on September 20, 2026, for 1 adult in Economy, th",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?",
+        "CLICK:Open Where from?"
+      ],
+      "final": "flights.html?trip=oneway&cabin=Business&pax=2+adults"
+    },
+    {
+      "kind": "multi",
+      "goal": "Order a pizza with pepperoni, mushrooms and direct delivery, then place the order. Deliver",
+      "status": "ready",
+      "steps": [
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open E-mail address:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:",
+        "CLICK:Open Your name:"
+      ],
+      "final": "multi.html?pre=pepperoni&pre=mushroom&email=jason@example.com&note=Ring+the+bell"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Osaka with free cancellation only, at most $500 per night, sorted by rating",
+      "status": "invalid_action",
+      "steps": [],
+      "final": "hotels.html?city=Osaka&max=%24100&sort=Rating&cancel=0"
+    },
+    {
+      "kind": "hotel",
+      "goal": "Find hotels in Paris with free cancellation only, at most $100 per night, sorted by price ",
       "status": "ready",
       "steps": [
         "CLICK:Open City",
@@ -1475,59 +1416,19 @@
         "CLICK:Open City",
         "CLICK:Open City",
         "CLICK:Open City",
-        "CLICK:Free cancellation only",
-        "CLICK:Free cancellation only",
+        "CLICK:Open City",
+        "CLICK:Open City",
         "CLICK:Open City",
         "CLICK:Open City",
         "CLICK:Open City"
       ],
-      "final": "hotels.html?max=%24500&sort=Relevance&cancel=0"
+      "final": "hotels.html?max=%24100&sort=Relevance&cancel=1"
     },
     {
       "kind": "flight",
-      "goal": "Find oneway flights from Tokyo to Berlin on September 20, 2026, for 1 adult in First, then",
-      "status": "ready",
+      "goal": "Find oneway flights from London to Tokyo on March 3, 2026, for 2 adults in Premium economy",
+      "status": "invalid_action",
       "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=Premium+economy&pax=1+adult&dep=Osaka"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in New York with free cancellation only, at most $100 per night, sorted by pri",
-      "status": "ready",
-      "steps": [
-        "SELECT:Max price per night → $5",
-        "SELECT:Max price per night → $1",
-        "SELECT:Max price per night → $5",
-        "CLICK:Search hotels",
-        "CLICK:Change search",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Zurich to Osaka on March 3, 2026, for 2 adults in First, then subm",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
-        "CLICK:Open Where to?",
         "CLICK:Open Where to?",
         "CLICK:Open Where to?",
         "CLICK:Open Where to?",
@@ -1535,151 +1436,7 @@
         "CLICK:Open Where to?",
         "CLICK:Open Where to?"
       ],
-      "final": "flights.html?trip=round&cabin=Business&pax=2+adults&from=Zurich&dep=March+3,+202"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Berlin with free cancellation only, at most $100 per night, sorted by price",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "SELECT:Max price per night → $1",
-        "CLICK:Open City",
-        "SELECT:Max price per night → $5",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?city=Berlin&max=%2450&sort=Relevance&cancel=1"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Zurich to Osaka on March 3, 2026, for 1 adult in First, then submi",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=round&cabin=Business&pax=1+adult"
-    },
-    {
-      "kind": "flight",
-      "goal": "Find round flights from Paris to London on October 5, 2026, for 2 adults in Premium econom",
-      "status": "ready",
-      "steps": [
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip",
-        "CLICK:Round trip"
-      ],
-      "final": "flights.html?trip=oneway&cabin=Economy&pax=2+adults&to=London&dep=October+5,+202"
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "blocked",
-      "goal": "Export the full catalogue to CSV.",
-      "status": "ready",
-      "steps": [
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot",
-        "CLICK:I am not a robot"
-      ],
-      "final": "blocked.html"
-    },
-    {
-      "kind": "contact",
-      "goal": "Send the contact form from jason@example.com with the name Li Wei and the message 'Please ",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Full name",
-        "CLICK:Open Message",
-        "CLICK:Open Message",
-        "CLICK:Open Message",
-        "CLICK:Open Message",
-        "CLICK:Open Message",
-        "CLICK:Open Message",
-        "CLICK:Open Message"
-      ],
-      "final": "contact.html?name=Li+Wei&email=jason@example.com"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in New York with free cancellation only, at most $100 per night, sorted by pri",
-      "status": "ready",
-      "steps": [
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?max=%24100&sort=Price+low+to+high&cancel=0"
-    },
-    {
-      "kind": "hotel",
-      "goal": "Find hotels in Paris with free cancellation only, at most $200 per night, sorted by rating",
-      "status": "ready",
-      "steps": [
-        "CLICK:Free cancellation only",
-        "SELECT:Sort by → Rating",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City",
-        "CLICK:Open City"
-      ],
-      "final": "hotels.html?city=Paris&max=%24200&sort=Price+low+to+high&cancel=0"
+      "final": "flights.html?trip=round&cabin=Business&pax=2+adults&from=London&dep=March+3,+202"
     }
   ]
 }

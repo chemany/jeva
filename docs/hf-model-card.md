@@ -26,9 +26,9 @@ action** as compact JSON — no prose, and no invented selectors.
 
 - **Base model:** [`openbmb/MiniCPM5-2B`](https://modelscope.cn/models/OpenBMB/MiniCPM5-2B) (Apache-2.0)
 - **Method:** LoRA SFT (r=16, α=32, 1 epoch), then **merged into the base weights** — this release is a full model, not an adapter
-- **Training data:** 9,357 trajectories from driving a real Chrome with a deterministic solver — **zero human labels, no teacher model**
-- **Weights:** GGUF (F16 / Q8_0 / Q4_K_M) on the [GitHub release](https://github.com/chemany/jeva/releases); this repo
-  also hosts the merged transformer weights
+- **Training data:** 10,686 trajectories from driving a real Chrome with a deterministic solver — **zero human labels, no teacher model**
+- **Weights:** this repository holds the merged transformer weights at the root and the GGUF
+  variants (F16 / Q8_0 / Q4_K_M) under `gguf/`
 - **Project / training code:** <https://github.com/chemany/jeva>
 - **License:** Apache-2.0
 
@@ -55,19 +55,25 @@ verified independently: the submitted values are read back from the resulting pa
 counts only when the browser really ended up in the right place. The model's own `DONE` is never
 trusted.
 
-| Decision model | Params | Site 1 | Site 2 | **Site 3 (never trained)** | Latency / decision |
+| Decision model | Params | Site 1 (100 tasks) | Site 2 | **Site 3 (never trained)** | Latency / decision |
 |---|---|---|---|---|---|
-| MiniCPM5-2B (base, zero-shot) | 2B | 8% | — | — | 237 ms |
-| Bonsai-27B (zero-shot) | 27B | 70% (10 tasks) | — | — | 6800 ms |
-| **jeva** | **2B** | **100%** | **100%** | **100%** | **276 ms** (Q4_K_M) |
+| MiniCPM5-2B (base, zero-shot) | 2B | 10% | — | — | 147 ms |
+| Bonsai-27B (zero-shot) | 27B | 92.5% (40 tasks) | — | — | 1769 ms |
+| **jeva** | **2B** | **100%** | **100%** | **100%** | **229 ms** (Q4_K_M) |
 
 Per task type on Site 1:
 
-| Task type | Base | **jeva** |
-|---|---|---|
-| Blocked page (CAPTCHA / rate limit) | 0 / 13 | **100%** |
-| Flight search (radio + 3 fields + submit) | 0 / 32 | **100%** |
-| Hotel filters (2 selects + checkbox) | 0 / 28 | **100%** |
+| Task type | Base | Bonsai-27B | **jeva** |
+|---|---|---|---|
+| Blocked page (CAPTCHA / rate limit) | 100% (9/9) | 100% (5/5) | **100%** (9/9) |
+| Flight search (radio + 3 fields + submit) | 0% (0/21) | 100% (7/7) | **100%** (21/21) |
+| Hotel filters (2 selects + checkbox) | 0% (0/26) | 100% (12/12) | **100%** (26/26) |
+| Contact form (3 fields + consent) | 0% (0/6) | 0% (0/1) | **100%** (6/6) |
+| Autocomplete (type → pick option) | 14% (1/7) | 100% (4/4) | **100%** (7/7) |
+| Order form (many requirements + clock + note) | 0% (0/31) | 82% (9/11) | **100%** (31/31) |
+
+On the four subsets where the page pre-fills nothing — a clock field, a free-text note, contact
+details given as a bare list, and all three at once — jeva scores 20/20 on each.
 | Contact form (3 fields + consent) | 2 / 13 | **100%** |
 | Autocomplete (type → pick option) | 6 / 14 | **100%** |
 
@@ -203,7 +209,7 @@ No human labelling and no teacher model. A deterministic solver drives real Chro
 The solver sees a privileged "already satisfied / not yet done" line that is **not** recorded, so
 the student has to learn state tracking from the state alone.
 
-2,200 tasks → 9,357 verified examples in ~11 minutes; LoRA training ~70 minutes on one V100.
+2,600 tasks → 10,686 verified examples in ~30 minutes; LoRA training ~75 minutes on one V100.
 
 ## Limitations
 

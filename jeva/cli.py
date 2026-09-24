@@ -27,15 +27,15 @@ from pathlib import Path
 DEFAULT_PORT = 8020
 DEFAULT_ALIAS = "jeva"
 VARIANTS = {
-    "Q4_K_M": "MiniCPM5-2B-WebDecider-Q4_K_M.gguf",   # 1.6 GB, the recommended default
-    "Q8_0": "MiniCPM5-2B-WebDecider-Q8_0.gguf",       # 2.7 GB
-    "F16": "MiniCPM5-2B-WebDecider-F16.gguf",         # 5.0 GB
+    "Q4_K_M": "MiniCPM5-2B-WebDecider-v7-Q4_K_M.gguf",   # 1.6 GB, the recommended default
+    "Q8_0": "MiniCPM5-2B-WebDecider-v7-Q8_0.gguf",       # 2.7 GB
+    "F16": "MiniCPM5-2B-WebDecider-v7-F16.gguf",         # 5.0 GB
 }
 # 权重来源：按顺序尝试，第一个成功的胜出。设 JEVA_BASE_URL 可覆盖（单一来源）。
 BASE_URLS = [
     # ModelScope 优先——国内直连，且一个仓库里同时放了合并版权重和 gguf/
     "https://modelscope.cn/models/chemany/jeva/resolve/master/gguf",
-    "https://github.com/chemany/jeva/releases/download/v0.1.0",
+    "https://github.com/chemany/jeva/releases/download/v0.2.0",
 ]
 DEFAULT_BASE_URL = os.environ.get("JEVA_BASE_URL", "")
 

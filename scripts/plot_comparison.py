@@ -25,21 +25,22 @@ ROWS = [("blocked", "Blocked page (CAPTCHA / rate limit)"),
         ("flight", "Flight search (radio + 3 fields + submit)"),
         ("hotel", "Hotel filters (2 selects + checkbox)"),
         ("contact", "Contact form (3 fields + consent)"),
-        ("wiki", "Autocomplete (type → pick option)")]
+        ("wiki", "Autocomplete (type → pick option)"),
+        ("multi", "Order form (many requirements + clock + note)")]
 
 # model key -> (label, colour, marker, results file, filled)
 MODELS = [
     ("base",  "MiniCPM5-2B (untrained)", "#c9ced6", "o", "base.json",          False),
     ("bonsai", "Bonsai-27B (zero-shot)",  "#f0a020", "o", "bonsai.json",        True),
-    ("jeva",  "jeva (2B, ours)",          "#0b3d91", "o", "jeva_site1_100.json", True),
+    ("jeva",  "jeva (2B, ours)",          "#0b3d91", "o", "jeva_v7_site1.json", True),
 ]
 
 NOTES = [
-    ("Training a 2B on verified trajectories", "+92 pp overall (8% → 100%)"),
-    ("Multi-site collection (with distractors)", "site2 flight 19% → 100%"),
-    ("Prompt: status line removed, exact wording kept", "no change (by design)"),
+    ("Training a 2B on verified trajectories", "10% → 100% on the same suite"),
+    ("Goals that need several manual steps", "0% → 100% (order form row)"),
+    ("Subsets where the page pre-fills nothing", "100% (note / clock / contact, 20 each)"),
     ("Merged weights + Q4_K_M quantisation", "100% → 100%, 5.0 GB → 1.6 GB"),
-    ("Serving path (same weights, same prompt)", "llama.cpp 0.25 s · vLLM 0.95 s · HF 8.4 s"),
+    ("Latency per decision", "jeva 0.23 s · Bonsai-27B 1.75 s · naive HF 8.4 s"),
 ]
 
 

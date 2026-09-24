@@ -25,11 +25,11 @@ beyond your usual inference stack.
 
 ## Highlights
 
-- **One decision, one call, ~250 ms.** 2B parameters, 1.6 GB as a Q4_K_M GGUF, running under llama.cpp on a single V100.
+- **One decision, one call, ~230 ms.** 2B parameters, 1.6 GB as a Q4_K_M GGUF, running under llama.cpp on a single V100.
 - **Typed action space.** `CLICK` · `TYPE_TEXT` · `SELECT` · `WAIT` · `DONE` · `BLOCKED`, targeting indices from the observation you supplied.
 - **No invented selectors.** The model returns an index; your executor resolves it against the same snapshot. It never emits CSS, coordinates, or JavaScript.
 - **100% task success on the frozen suites**, including a site whose label vocabulary and layout never appear in training.
-- **Zero human labels.** 9,357 training trajectories from 2,200 tasks, collected in ~11 minutes; training is one LoRA pass, ~70 minutes on one V100.
+- **Zero human labels.** 10,686 training trajectories from 2,600 tasks, collected in ~30 minutes; training is one LoRA pass, ~75 minutes on one V100.
 - **Everything included**: the collector, the training script, the merge/quantise pipeline, the three test sites, and the frozen eval results.
 
 ## Install
@@ -56,7 +56,7 @@ pip install "git+https://github.com/chemany/jeva"
 
 ## Quick start
 
-By hand — grab a GGUF from the [release](https://github.com/chemany/jeva/releases) and serve it:
+By hand — grab a GGUF from [ModelScope](https://modelscope.cn/models/chemany/jeva) and serve it:
 
 ```bash
 llama-server -m MiniCPM5-2B-WebDecider-Q4_K_M.gguf \
@@ -109,16 +109,17 @@ python examples/quickstart.py            # uses the built-in demo observation
 | **jeva** (this release) | MiniCPM5-2B | 2.5B (2.0B non-embed) | merged, HF | 5.0 GB | **100%** | 1500 ms (naive HF) |
 | jeva · GGUF F16 | ” | ” | llama.cpp | 5.04 GB | 100% | ~250 ms |
 | **jeva · GGUF Q8_0** | ” | ” | llama.cpp | 2.68 GB | **100%** | **283 ms** |
-| **jeva · GGUF Q4_K_M** | ” | ” | llama.cpp | **1.56 GB** | **100%** | **276 ms** |
-| MiniCPM5-2B (untrained) | — | 2.5B | — | 5.0 GB | 8% | 237 ms |
-| Bonsai-27B (zero-shot) | Qwen3.8-27B | 27B | GGUF | 14 GB | 70% (10 tasks) | 6800 ms |
+| **jeva · GGUF Q4_K_M** | ” | ” | llama.cpp | **1.56 GB** | **100%** | **229 ms** |
+| MiniCPM5-2B (untrained) | — | 2.5B | llama.cpp | 1.56 GB | 10% (100 tasks) | 147 ms |
+| Bonsai-27B (zero-shot) | Qwen3.8-27B | 27B | GGUF q4_0 | 14 GB | 92.5% (40 tasks) | 1769 ms |
 
-All variants are attached to the [release](https://github.com/chemany/jeva/releases); the merged transformer weights are
-mirrored on ModelScope and Hugging Face, linked from that page.
+The GGUF variants live under `gguf/` on
+[ModelScope](https://modelscope.cn/models/chemany/jeva); the merged transformer weights sit at the
+root of the same repository. `jeva download` fetches them from there.
 
 Quantisation costs nothing here: all three GGUF variants score **100%** on the same suites.
-The untrained base on the same prompt scores **8%** — it loops on already-checked radios, uses
-`CLICK` where `TYPE_TEXT` is required, and never emits `BLOCKED`.
+The untrained base on the same prompt scores **10%** — it loops on already-checked radios, uses
+`CLICK` where `TYPE_TEXT` is required, and invents element indices 18 times in 100 tasks.
 
 > **Not an apples-to-apples comparison.** jeva is *trained for this action space*; Bonsai-27B and
 > the untrained base are zero-shot on the same prompt. The point of the table is what 11 minutes of
@@ -134,39 +135,52 @@ counts when the browser really ended up in the right state.
 
 | Task type | MiniCPM5-2B (base) | Bonsai-27B (zero-shot) | **jeva** |
 |---|---|---|---|
-| Blocked page (CAPTCHA / rate limit) | 0 / 13 · 0% | 1 / 1 · 100% | **100%** |
-| Flight search (radio + 3 fields + submit) | 0 / 32 · 0% | 2 / 4 · 50% | **100%** |
-| Hotel filters (2 selects + checkbox) | 0 / 28 · 0% | 2 / 3 · 67% | **100%** |
-| Contact form (3 fields + consent) | 2 / 13 · 15% | 2 / 2 · 100% | **100%** |
-| Autocomplete (type → pick option) | 6 / 14 · 43% | — | **100%** |
-| **Overall** | **8%** (100 tasks) | **70%** (10 tasks) | **100%** (100 tasks) |
+| Blocked page (CAPTCHA / rate limit) | 9 / 9 · 100% | 5 / 5 · 100% | **9 / 9 · 100%** |
+| Flight search (radio + 3 fields + submit) | 0 / 21 · 0% | 7 / 7 · 100% | **21 / 21 · 100%** |
+| Hotel filters (2 selects + checkbox) | 0 / 26 · 0% | 12 / 12 · 100% | **26 / 26 · 100%** |
+| Contact form (3 fields + consent) | 0 / 6 · 0% | 0 / 1 · 0% | **6 / 6 · 100%** |
+| Autocomplete (type → pick option) | 1 / 7 · 14% | 4 / 4 · 100% | **7 / 7 · 100%** |
+| Order form (many requirements + clock + note) | 0 / 31 · 0% | 9 / 11 · 82% | **31 / 31 · 100%** |
+| **Overall** | **10%** (100 tasks) | **92.5%** (40 tasks) | **100%** (100 tasks) |
 
-The Bonsai column rests on 10 tasks and is indicative only. It failed the way the untrained base
-does: repeatedly clicking `Round trip` when the goal asked for one way.
+The Bonsai column rests on 40 tasks and is indicative only; it failed the order form by stopping
+without submitting, and failed the contact form by inventing a target.
+
+### Subsets the suite averages away
+
+A family with 31 tasks can lose three of them without the overall number moving. These subsets keep
+only the goals whose page pre-fills nothing, so every requirement has to be handled by the decider
+itself ([`evals/subset_eval.py`](evals/subset_eval.py), 20 tasks each):
+
+| Subset | What the goal leaves to the model | jeva |
+|---|---|---|
+| `when` | a delivery time, written as `12:30` or `9:00 AM` | **20 / 20** |
+| `note` | a free-text note phrased four different ways | **20 / 20** |
+| `contact` | name, phone and email given as a bare list | **20 / 20** |
+| `compound` | all three at once, plus toppings — an ordinary order form | **20 / 20** |
 
 ### Real-site spot check
 
 jeva was trained only on the synthetic fixtures in `site/`. Pointed at a live third-party form it
 had never seen — [`httpbin.org/forms/post`](https://httpbin.org/forms/post), a real page with three
-text fields, a radio group and four checkboxes — it fills the form and submits it. Four runs:
+text fields, a radio group, four checkboxes and a native time input — it fills every field the goal
+names and submits. Four runs:
 
-| | Core fields (name / phone / email / size / submit) | Both toppings asked for | Correct `DONE` after submit |
-|---|---|---|---|
-| 4 runs | **4 / 4** | **1 / 4** | **1 / 4** |
+| | Core fields (name / phone / email / size) | Both toppings asked for | Time of day | Submitted + correct `DONE` |
+|---|---|---|---|---|
+| 4 runs | **4 / 4** | **4 / 4** | **4 / 4** | **4 / 4** |
 
-Every run derived the right values from the goal (`Jason Zhang`, `555-0100`, `jason@example.com`,
-`size: large`) and put the prose part of the goal into the instructions textarea. The two failures
-are consistent and worth stating plainly:
-
-- **Partial label matching.** With the goal saying "mushrooms and cheese", the model ticks
-  `Mushroom` but not `Extra Cheese`; given "mushroom and **extra cheese** toppings" it ticks both.
-  A label that is not literally in the goal is easy to miss.
-- **Termination on a non-form page.** After submitting, the page becomes a JSON dump with no
-  interactive elements. Three times out of four the model invented a target (`delivery`) instead of
-  returning `DONE`. The executor rejected the unknown index, so nothing bad happened — which is the
-  point of validating every index against the observation you sent — but this is a real gap.
+Every run derives the right values from the goal (`Jason Zhang`, `555-0100`, `jason@example.com`,
+`size: large`), enters `12:30`, ticks `Mushroom` **and** `Extra Cheese` — for a goal that says
+"with mushrooms and cheese", so the label has to be matched by meaning, not by string — and stops
+only after the browser really submitted.
 
 Reproduce: `python evals/real_site_test.py` (needs network access).
+
+This check is the reason the last three training rounds exist. It found that the decider could not
+see `<input type=time>` at all, could not type into one once it could see it, and was never asked to
+fill a field whose label does not appear in the goal. Each is now a task family in the collector and
+a subset in `evals/subset_eval.py`.
 
 ### Held-out sites
 
@@ -176,28 +190,31 @@ holdout: it was never used for training, and its labels are entirely different
 
 | Suite | Tasks | jeva |
 |---|---|---|
-| `site1` (in training distribution) | 40 | **100%** |
-| `site2` (in training distribution, extra nav distractors) | 100 | **100%** |
+| `site1` (in training distribution) | 100 | **100%** |
+| `site2` (in training distribution, extra nav distractors) | 40 | **100%** |
 | **`site3` (never trained, new labels)** | 40 | **100%** |
-| live `httpbin.org/forms/post` (never trained, real markup) | 4 runs | see [below](#real-site-spot-check) |
+| live `httpbin.org/forms/post` (never trained, real markup) | 4 runs | see [above](#real-site-spot-check) |
 
 ### What moved the number
 
 | Change | Effect |
 |---|---|
-| LoRA SFT on 9,357 verified trajectories | 8% → **100%** (overall) |
+| LoRA SFT on verified trajectories | 10% → **100%** (overall) |
 | Multi-site collection (including distractor links that shift element indices) | site2 flight **19% → 100%** |
+| Task family for goals that need several boxes at once | order form **0% → 100%** |
+| Task family for a label the goal does not spell out | "cheese" now finds `Extra Cheese` |
+| Task family for a clock field and for a free-text note | `when` / `note` / `contact` subsets **100%** |
 | Removing the leftover index duplication in the prompt | no change (verified equivalent, 100% → 100%) |
 | Merging the adapter + Q4_K_M quantisation | no change (100% → 100%), 5.0 GB → 1.6 GB |
-| Serving path, same weights and prompt | llama.cpp **0.25 s** · vLLM 0.95 s · naive HF generate 8.4 s |
+| Serving path, same weights and prompt | llama.cpp **0.23 s** · vLLM 0.95 s · naive HF generate 8.4 s |
 
 Training data scale and ablations are in [docs/pipeline.md](docs/pipeline.md); the eval JSONs are
 frozen in [`evals/results/`](evals/results/).
 
 **What is in this repo:** the runtime package, the collector and trainer, the three test sites, the
 frozen eval results, and a 120-record [sample](evals/data/sample.jsonl) of the training set so you
-can inspect the format. **What is not:** the full 9,357-record set (~64 MB) and the weights — the
-former is regenerated by the collector in ~11 minutes, the latter is attached to the releases.
+can inspect the format. **What is not:** the full 10,686-record set (~72 MB) and the weights — the
+former is regenerated by the collector in ~30 minutes, the latter is on ModelScope.
 The ModelScope/Hugging Face facing model card is [docs/hf-model-card.md](docs/hf-model-card.md).
 
 ## State format
@@ -310,7 +327,7 @@ real Chrome ──snapshot──▶ DOM (elements + page text)
                      LoRA SFT → merge → GGUF
 ```
 
-Yield: **2,200 tasks → 9,357 verified examples in ~11 minutes**. Only trajectories the
+Yield: **2,600 tasks → 10,686 verified examples in ~30 minutes**. Only trajectories the
 environment verifies are kept, so a task that fails simply contributes nothing. The solver sees a privileged
 summary of what is already satisfied; the student does not, so it has to learn state tracking
 from the state alone. Full detail and ablations: [docs/pipeline.md](docs/pipeline.md).
@@ -349,10 +366,13 @@ same pipeline produces training data for that site. See [docs/pipeline.md](docs/
 - **Prompt-sensitive.** The system prompt, the operation descriptions and the state layout are
   part of the model. Reproduce them exactly (`jeva.prompt` / `jeva.render` do).
 - **Not a general assistant.** It is a decision head, not a chat model.
-- **Partial label matching:** a control whose label is not literally in the goal is easy to miss
-  (see [Real-site spot check](#real-site-spot-check)).
-- **Termination on pages without controls** is unreliable — it may invent a target instead of
-  returning `DONE`. Always validate the index against your own observation.
+- **A value the page refuses is not detected.** Set a `<input type=time min="11:00">` to 09:00 and
+  the browser blocks the form; the model keeps clicking submit instead of reporting `BLOCKED`. It
+  cannot see `min`/`max` in the state, and nothing in training failed that way. Give constrained
+  fields a value inside their range, or have your executor surface the validation message.
+- **Termination is only as good as its training families.** It now stops correctly on pages with
+  no interactive elements and on goals it cannot satisfy from the current page, but a *new* shape
+  of dead end is not covered by construction.
 - Evaluated on three synthetic sites plus one live third-party form (real Chrome, real DOM);
   this is not a production-website benchmark.
 

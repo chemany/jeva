@@ -49,8 +49,8 @@ no wrong action ever becomes supervision.
 
 | Stage | Scale | Wall clock |
 |---|---|---|
-| Collect (real Chrome, replay) | 2,200 tasks / **9,357 examples** (~90% of generated tasks pass verification) | **~11 min** |
-| LoRA SFT, 1 epoch, 1× V100 | 9,357 examples | ~70 min |
+| Collect (real Chrome, replay) | 2,600 tasks / **10,686 examples** (~87% of generated tasks pass verification) | **~30 min** |
+| LoRA SFT, 1 epoch, 1× V100 | 10,686 examples | ~75 min |
 | Merge + GGUF + quantise | — | seconds |
 | **Human labelling** | — | **none** |
 
@@ -61,11 +61,30 @@ nothing.
 
 | Change | Effect |
 |---|---|
-| **Base → LoRA SFT** | 8% → 100% overall |
+| **Base → LoRA SFT** | 10% → 100% overall |
 | **Single-site → multi-site collection** | site2 flight **19% → 100%** |
+| **Adding the multi-requirement goal family** | order form **0% → 100%** |
+| **Adding the clock-field and free-text-note families** | `when` / `note` / `contact` **100%** |
 | Clean vs duplicated index in the prompt | equivalent (100% both ways) |
 | Merge + Q4_K_M quantisation | equivalent (100%), 5.0 GB → 1.6 GB |
-| Serving path (same weights/prompt) | llama.cpp 0.25 s · vLLM 0.95 s · naive HF 8.4 s |
+| Serving path (same weights/prompt) | llama.cpp 0.23 s · vLLM 0.95 s · naive HF 8.4 s |
+
+### Task families are found by breaking the model on a real page
+
+Three rounds of this project came from one live third-party form
+([`httpbin.org/forms/post`](https://github.com/chemany/jeva#real-site-spot-check)) rather than from
+any synthetic suite. Each failure was a *goal shape* the collector never produced, not a capacity
+limit:
+
+| What the live page exposed | What was missing |
+|---|---|
+| The goal named a delivery time and the run looped on an unrelated field | the observation had no role for `<input type=time>`, so the control was invisible; once visible, `Input.insertText` is silently ignored by date/time inputs |
+| The goal asked for "mushrooms **and cheese**" and only `Mushroom` got ticked | no family where the goal's word differs from the control's label |
+| The goal asked for several checkboxes and the run submitted after one | no family with more than one requirement of the same kind |
+| The goal listed contact details as "Name X, phone Y, email Z" and they were skipped | no family where several different field types are required at once, in that phrasing |
+
+Each became a generator branch, a page, and a subset in `evals/subset_eval.py`, because a
+forty-task random suite hides a gap that costs one task per family.
 
 ### The multi-site result is the interesting one
 

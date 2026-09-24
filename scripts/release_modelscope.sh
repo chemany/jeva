@@ -17,8 +17,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REPO=${MODELSCOPE_REPO:-chemany/jeva}
-MERGED=${MERGED_DIR:-/root/code/models/MiniCPM5-2B-WebDecider}
-GGUF=${GGUF_DIR:-/root/code/models/MiniCPM5-2B-WebDecider-GGUF}
+# v7 is the released revision; older runs stay on disk as MiniCPM5-2B-WebDecider-v{3..6}*
+MERGED=${MERGED_DIR:-/root/code/models/MiniCPM5-2B-WebDecider-v7}
+GGUF=${GGUF_DIR:-/root/code/models/MiniCPM5-2B-WebDecider-v7-GGUF}
 PY=${PY:-python3}
 
 [ -f "$HOME/.modelscope/credentials.json" ] || {
@@ -43,7 +44,7 @@ echo "▶ creating $REPO (ignored if it already exists)"
 
 echo "▶ uploading merged weights + model card"
 "$PY" -m modelscope.cli.cli upload "$REPO" "$MERGED" \
-  --commit-message "jeva: merged MiniCPM5-2B fine-tune (100% on the frozen suites)"
+  --commit-message "jeva: merged MiniCPM5-2B fine-tune (100% on the frozen suites, 100/100 tasks)"
 
 echo "▶ uploading GGUF variants under gguf/"
 "$PY" -m modelscope.cli.cli upload "$REPO" "$GGUF" gguf \
