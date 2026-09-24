@@ -21,7 +21,10 @@ from jeva import Jeva, render_state, resolve                             # noqa:
 
 URL = sys.argv[1] if len(sys.argv) > 1 else "https://httpbin.org/forms/post"
 GOAL = (sys.argv[2] if len(sys.argv) > 2 else
-        "Order one large pizza with mushrooms and cheese, for delivery at 12:30. "
+        # "then place the order" is not padding: without it, stopping once every field is filled
+        # is a defensible reading of the goal, and the run never reaches the submitted-values page.
+        "Order one large pizza with mushrooms and cheese, for delivery at 12:30, "
+        "then place the order. "
         "Name Jason Zhang, phone 555-0100, email jason@example.com.")
 STEPS = int(sys.argv[3]) if len(sys.argv) > 3 else 14
 
