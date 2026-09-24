@@ -320,10 +320,11 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--screenshots", help="directory to save step screenshots into")
     r.add_argument("--settle", type=float, default=0.6, help="seconds to wait after each action")
     guard = r.add_argument_group("safety (for irreversible actions)")
-    guard.add_argument("--vote", type=int, default=1, metavar="N",
+    guard.add_argument("--vote", type=int, default=3, metavar="N",
                        help="before an IRREVERSIBLE action (submit / pay / delete / ...), sample the "
                             "decision N times and require agreement; disagreeing means nothing runs. "
-                            "Ordinary actions keep the single fast decision. Default 1 = off")
+                            "Ordinary actions keep the single fast decision. "
+                            "Default 3 (use 1 to turn it off)")
     guard.add_argument("--irreversible", action="append", metavar="SUBSTRING",
                        help="extra label substring to treat as irreversible (repeatable); "
                             "the built-in list is used when omitted")

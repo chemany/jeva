@@ -107,7 +107,7 @@ class Agent:
                  profile: str = "/tmp/jeva-agent-profile", chrome: str | None = None,
                  screenshot_dir: str | None = None, cdp_ws: str | None = None,
                  attach: str | bool | None = None, settle: float = 0.6,
-                 fresh: bool = True, vote: int = 1, irreversible=None,
+                 fresh: bool = True, vote: int = 3, irreversible=None,
                  vote_temperature: float = 0.8, escalate=None):
         if not goal.strip():
             raise ValueError("Supply a goal")
@@ -116,9 +116,11 @@ class Agent:
         self.jeva = jeva or Jeva()
         self.max_steps = max_steps
         self.settle = settle
-        # Voting only guards the actions that cannot be undone; everything else keeps the single
-        # 230 ms decision. ``escalate`` is an optional hook so a deployment that owns a stronger
-        # model can plug it in -- nothing here requires a second model to exist.
+        # On by default: an irreversible action gets a few extra samples (~0.25 s), ordinary
+        # actions keep the single 230 ms decision, and disagreement stops the run instead of
+        # letting an unreproducible decision through. ``vote=1`` turns it off.
+        # ``escalate`` is an optional hook for a deployment that owns a stronger model; nothing
+        # here requires a second model to exist.
         self.vote = max(1, vote)
         self.vote_temperature = vote_temperature
         self.irreversible = tuple(DEFAULT_IRREVERSIBLE if irreversible is None else irreversible)
