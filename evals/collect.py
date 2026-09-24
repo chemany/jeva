@@ -213,13 +213,14 @@ def gen_multi(rng):
         pre.append(wrong[0])
     when_pre = when if when and rng.random() < 0.3 else None      # 有时已经填好了
     contact_pre = [k for k in (contact or {}) if rng.random() < 0.25]
-    url = f"{SITE}/multi.html" + ("?" + "&".join(f"pre={v}" for v in pre) if pre else "")
+    params = [f"pre={v}" for v in pre]
     if when_pre:
-        url += ("&" if "?" in url else "?") + "when=" + when_pre.replace(" ", "+")
-    for k in contact_pre:
-        url += "&" + k + "=" + str(contact[k]).replace(" ", "+")
+        params.append("when=" + when_pre.replace(" ", "+"))
+    params += [k + "=" + str(contact[k]).replace(" ", "+") for k in contact_pre]
     if note and rng.random() < 0.35:            # 多数情况下 note 是空的，必须真的去填
-        url += ("&" if "?" in url else "?") + "note=" + note.replace(" ", "+")
+        params.append("note=" + note.replace(" ", "+"))
+    # 一次性拼好：逐个 += 很容易在还没有 "?" 时先写上 "&"，页面就变成 404
+    url = f"{SITE}/multi.html" + ("?" + "&".join(params) if params else "")
     spec = {"kind": "multi",
             "want": [(label, v) for v, label, _w in want],
             "flag": (flag[1], flag[0]) if flag else None,
