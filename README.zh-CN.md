@@ -110,7 +110,7 @@ python examples/quickstart.py            # 用内置的示例观察
 | MiniCPM5-2B（未训练） | — | 2.5B | llama.cpp | 1.56 GB | 10%（100 题） | 147 ms |
 | Bonsai-27B（零样本） | Qwen3.8-27B | 27B | GGUF q4_0 | 14 GB | 92.5%（40 题） | 1769 ms |
 
-所有形态都在 [ModelScope](https://modelscope.cn/models/chemany/jeva) 上：GGUF 放在 `gguf/` 下，
+所有形态都在 [ModelScope](https://modelscope.cn/models/imjasonli/jeva) 上：GGUF 放在 `gguf/` 下，
 合并后的 transformer 权重放在同一仓库根目录。`jeva download` 即从那里取回。
 
 量化在这里**没有代价**：三档 GGUF 在同一批测试上都是 **100%**。
@@ -202,7 +202,7 @@ cheese」，也就是标签必须**按语义**匹配、而非按字面——并�
 **仓库里有什么：** 运行时包、采集器与训练脚本、三个测试站点、冻结的评测结果，
 以及一份 120 条的[训练集样本](evals/data/sample.jsonl)供你核对格式。
 **仓库里没有什么：** 完整的 10,686 条训练集（约 72 MB）与权重文件——前者用采集器
-约 30 分钟即可再生，后者在 [ModelScope](https://modelscope.cn/models/chemany/jeva) 上。模型卡在
+约 30 分钟即可再生，后者在 [ModelScope](https://modelscope.cn/models/imjasonli/jeva) 上。模型卡在
 [docs/hf-model-card.md](docs/hf-model-card.md)。
 
 ## state 格式

@@ -6,7 +6,7 @@
 #        printf '{"access_token":"%s"}' '<YOUR_TOKEN>' > ~/.modelscope/credentials.json
 #      token page: https://modelscope.cn/my/myaccesstoken
 #
-#   2) export MODELSCOPE_REPO=<namespace>/<name>   (default: chemany/jeva)
+#   2) export MODELSCOPE_REPO=<namespace>/<name>   (default: imjasonli/jeva)
 #
 #   3) bash scripts/release_modelscope.sh
 #
@@ -16,14 +16,24 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO=${MODELSCOPE_REPO:-chemany/jeva}
+# ModelScope 的用户名与 GitHub 的 chemany 不是同一个账号
+REPO=${MODELSCOPE_REPO:-imjasonli/jeva}
 # v7 is the released revision; older runs stay on disk as MiniCPM5-2B-WebDecider-v{3..6}*
 MERGED=${MERGED_DIR:-/root/code/models/MiniCPM5-2B-WebDecider-v7}
 GGUF=${GGUF_DIR:-/root/code/models/MiniCPM5-2B-WebDecider-v7-GGUF}
 PY=${PY:-python3}
 
-[ -f "$HOME/.modelscope/credentials.json" ] || {
-  echo "No ~/.modelscope/credentials.json — see the header of this script." >&2; exit 1; }
+# The SDK authenticates through MODELSCOPE_API_TOKEN, not through the file directly, so the
+# token stays out of this repo and out of the shell history.
+if [ -z "${MODELSCOPE_API_TOKEN:-}" ] && [ -f "$HOME/.modelscope/credentials.json" ]; then
+  MODELSCOPE_API_TOKEN=$("$PY" -c 'import json,os;print(json.load(open(os.path.expanduser("~/.modelscope/credentials.json")))["access_token"])')
+  export MODELSCOPE_API_TOKEN
+fi
+[ -n "${MODELSCOPE_API_TOKEN:-}" ] || {
+  echo "No token. Export MODELSCOPE_API_TOKEN, or write ~/.modelscope/credentials.json" >&2
+  echo '(see the header of this script).' >&2
+  exit 1
+}
 [ -d "$MERGED" ] || { echo "merged model dir not found: $MERGED" >&2; exit 1; }
 [ -d "$GGUF" ]   || { echo "gguf dir not found: $GGUF" >&2; exit 1; }
 

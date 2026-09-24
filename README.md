@@ -56,7 +56,7 @@ pip install "git+https://github.com/chemany/jeva"
 
 ## Quick start
 
-By hand — grab a GGUF from [ModelScope](https://modelscope.cn/models/chemany/jeva) and serve it:
+By hand — grab a GGUF from [ModelScope](https://modelscope.cn/models/imjasonli/jeva) and serve it:
 
 ```bash
 llama-server -m MiniCPM5-2B-WebDecider-Q4_K_M.gguf \
@@ -114,7 +114,7 @@ python examples/quickstart.py            # uses the built-in demo observation
 | Bonsai-27B (zero-shot) | Qwen3.8-27B | 27B | GGUF q4_0 | 14 GB | 92.5% (40 tasks) | 1769 ms |
 
 The GGUF variants live under `gguf/` on
-[ModelScope](https://modelscope.cn/models/chemany/jeva); the merged transformer weights sit at the
+[ModelScope](https://modelscope.cn/models/imjasonli/jeva); the merged transformer weights sit at the
 root of the same repository. `jeva download` fetches them from there.
 
 Quantisation costs nothing here: all three GGUF variants score **100%** on the same suites.

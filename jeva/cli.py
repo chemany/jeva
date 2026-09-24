@@ -34,7 +34,7 @@ VARIANTS = {
 # 权重来源：按顺序尝试，第一个成功的胜出。设 JEVA_BASE_URL 可覆盖（单一来源）。
 BASE_URLS = [
     # ModelScope 优先——国内直连，且一个仓库里同时放了合并版权重和 gguf/
-    "https://modelscope.cn/models/chemany/jeva/resolve/master/gguf",
+    "https://modelscope.cn/models/imjasonli/jeva/resolve/master/gguf",
     "https://github.com/chemany/jeva/releases/download/v0.2.0",
 ]
 DEFAULT_BASE_URL = os.environ.get("JEVA_BASE_URL", "")
@@ -299,10 +299,48 @@ def build_parser() -> argparse.ArgumentParser:
                    help="leave the server running after the demo")
     m.set_defaults(func=cmd_demo)
 
+    r = sub.add_parser("run", help="drive a real browser towards a goal (agent loop)")
+    r.add_argument("url", help="page to open")
+    r.add_argument("goal", help="one natural-language goal")
+    r.add_argument("--steps", type=int, default=25, help="step budget (default 25)")
+    r.add_argument("--port", type=int, default=8020, help="jeva server port")
+    r.add_argument("--model", default=DEFAULT_ALIAS, help="model alias the server was started with")
+    r.add_argument("--chrome-port", type=int, default=9333, help="CDP port for the browser jeva launches")
+    r.add_argument("--profile", default="/tmp/jeva-agent-profile", help="throwaway Chrome profile")
+    r.add_argument("--chrome", help="explicit Chrome binary")
+    r.add_argument("--cdp-ws", help="attach to a browser that is already running (reuse a login)")
+    r.add_argument("--screenshots", help="directory to save step screenshots into")
+    r.add_argument("--settle", type=float, default=0.6, help="seconds to wait after each action")
+    r.add_argument("--json", action="store_true", help="print the full result as JSON")
+    r.set_defaults(func=cmd_run)
+
     c = sub.add_parser("check", help="diagnose the local setup")
     c.add_argument("--port", type=int, default=DEFAULT_PORT)
     c.set_defaults(func=cmd_check)
     return p
+
+
+def cmd_run(a) -> int:
+    from .agent import Agent
+    from .client import Jeva
+    jeva = Jeva(f"http://127.0.0.1:{a.port}/v1", model=a.model)
+    agent = Agent(a.url, a.goal, jeva=jeva, max_steps=a.steps, port=a.chrome_port,
+                  profile=a.profile, chrome=a.chrome, cdp_ws=a.cdp_ws,
+                  screenshot_dir=a.screenshots, settle=a.settle)
+    result = agent.run()
+    if a.json:
+        print(json.dumps(result.as_dict(), ensure_ascii=False, indent=2))
+    else:
+        for s in result.steps:
+            note = "" if s.page_changed else "  (page unchanged)"
+            print(f"  [{s.n:02d}] {s.operation:<9s} {s.target:<6s} {s.label[:44]:<46s} "
+                  f"{s.text!r}{note}")
+        print(f"\n  {result.status.upper()}: {result.reason}")
+        print(f"  ended at {result.url}")
+        print(f"  {len(result.steps)} steps, {result.elapsed_ms} ms, "
+              f"{result.invalid_targets} invalid targets")
+    # The model's DONE is a claim, not proof; the caller checks the page.
+    return 0 if result.status == "done" else (1 if result.status == "blocked" else 2)
 
 
 def main(argv=None) -> int:
