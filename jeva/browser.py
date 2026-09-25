@@ -110,7 +110,9 @@ PROMINENT_JS = r"""(() => {
     if (t.length < 8 || t.length > 90 || seen.has(t)) continue;
     seen.add(t);
     const cs = getComputedStyle(e);
-    items.push({t, href: e.href || '', size: parseFloat(cs.fontSize) || 0,
+    // Headlines are often an <h2> wrapping an <a>; e.href is undefined on the heading itself.
+    const inner = e.querySelector ? e.querySelector('a[href]') : null;
+    items.push({t, href: e.href || (inner && inner.href) || '', size: parseFloat(cs.fontSize) || 0,
                 weight: Number(cs.fontWeight) || 400,
                 x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width)});
   }
