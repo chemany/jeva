@@ -1,6 +1,7 @@
 /*
- * Minimal DOM snapshotter, adapted from browser-use/jev-ultrafast (MIT).
- * See evals/browser.py for the driver that evaluates this in the page.
+ * Minimal DOM snapshotter. Derived from browser-use/jev-ultrafast (MIT) -- see
+ * THIRD-PARTY-NOTICES.md for the copyright and permission notice that has to travel with it.
+ * jeva/browser.py is the driver that evaluates this in the page.
  */
 (() => {
   if (!document.body) return null;

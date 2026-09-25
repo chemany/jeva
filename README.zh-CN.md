@@ -425,6 +425,9 @@ python scripts/convert_gguf.sh
 - 评测在三个合成站点 + 一个线上第三方表单（真实 Chrome、真实 DOM）上完成，**不是生产网站基准**。
 
 ## 许可
+其中 DOM 快照脚本派生自 [browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast)（MIT），
+版权与许可声明见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
+
 
 **Apache-2.0**，与基座一致。jeva 是
 [`openbmb/MiniCPM5-2B`](https://modelscope.cn/models/OpenBMB/MiniCPM5-2B) 的微调衍生模型；

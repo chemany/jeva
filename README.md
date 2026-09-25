@@ -452,6 +452,9 @@ same pipeline produces training data for that site. See [docs/pipeline.md](docs/
   this is not a production-website benchmark.
 
 ## License
+Includes a DOM snapshotter derived from [browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) (MIT);
+see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+
 
 **Apache-2.0**, same as the base model. jeva is a fine-tuned derivative of
 [`openbmb/MiniCPM5-2B`](https://modelscope.cn/models/OpenBMB/MiniCPM5-2B); the name follows the
