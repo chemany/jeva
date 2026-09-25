@@ -6,6 +6,8 @@ different contract, fine-tune rather than reword.
 """
 from __future__ import annotations
 
+import json
+
 from .render import Page, available_operations, render_state, target_criteria
 
 SYSTEM = """You are a browser agent. Choose exactly ONE next action.
@@ -42,6 +44,15 @@ def build_prompt(page: Page, goal: str, history=(), rules: str = DEFAULT_RULES,
             continue
         # target_criteria 的值里已含 "[index]" 前缀，别再包一层
         lines.append(f"Targets for {op}: " + " | ".join(crit.values()))
+    # The example has to show the operation this page actually offers. It used to be hardcoded to
+    # CLICK, so on a page whose only operation is READ the model was being shown an example of a
+    # different task -- reading the model's own logits showed its first choice on one failing page
+    # was correct, while the text it produced was not.
+    example_op = next((op for op in ("CLICK", "TYPE_TEXT", "SELECT", "READ") if op in ops), "CLICK")
+    example = {"operation": example_op,
+               "target": str(next(iter(target_criteria(page, example_op)), "3")),
+               "text": ""}
     lines += ["", f"Policy rules: {rules}", "",
-              'Reply with JSON only, e.g. {"operation":"CLICK","target":"3","text":""}']
+              "Reply with JSON only, e.g. " + json.dumps(example, ensure_ascii=False,
+                                                    separators=(",", ":"))]
     return "\n".join(lines)
