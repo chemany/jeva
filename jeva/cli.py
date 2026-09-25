@@ -302,7 +302,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     r = sub.add_parser("run", help="drive a real browser towards a goal (agent loop)")
     r.add_argument("url", help="page to open")
-    r.add_argument("goal", help="one natural-language goal")
+    r.add_argument("goal", nargs="?", default="",
+                   help="one natural-language goal (the action to take). Optional when --ask is "
+                        "used on a page that needs no navigation")
     r.add_argument("--steps", type=int, default=25, help="step budget (default 25)")
     r.add_argument("--port", type=int, default=8020, help="jeva server port")
     r.add_argument("--model", default=DEFAULT_ALIAS, help="model alias the server was started with")
@@ -334,6 +336,10 @@ def build_parser() -> argparse.ArgumentParser:
                        help="OPTIONAL. On disagreement, re-decide against this OpenAI-compatible "
                             "endpoint instead of stopping. Nothing here requires a second model; "
                             "if you have none, leave it unset and the run stops instead")
+    r.add_argument("--ask", metavar="QUESTION",
+                   help="let the model answer a question about the page (e.g. 'What is the first "
+                        "news item?'). The model picks the block and its text is returned; no "
+                        "font-size or column rules are involved")
     r.add_argument("--read", type=int, default=0, metavar="N",
                    help="also return the N most prominent content blocks (by font size against "
                         "the page's own median, in reading order) so you do not have to parse the "
@@ -391,6 +397,25 @@ def cmd_run(a) -> int:
                   vote=a.vote, irreversible=a.irreversible, vote_temperature=a.vote_temperature,
                   escalate=escalate, expect_url=a.expect_url,
                   dismiss_overlays=not a.keep_overlays)
+    if a.ask:
+        # Navigation first (if a goal was given), then the content question -- a separate call
+        # because the content model was trained on text blocks only.
+        if a.goal:
+            agent.run(keep_open=True)
+        answer = agent.ask(a.ask)
+        if a.json:
+            print(json.dumps(answer, ensure_ascii=False, indent=2))
+        else:
+            if answer.get("error"):
+                print(f"  could not answer: {answer['error']}")
+            else:
+                print(f"\n  {answer['text']}")
+                if answer.get("href"):
+                    print(f"  {answer['href']}")
+                print(f"  (block {answer['block']}/{answer['blocks_seen']}, "
+                      f"{answer['size']:.0f}px col{answer['column']})")
+        agent.close()
+        return 0 if "error" not in answer else 2
     result = agent.run(read=a.read)
     if a.json:
         print(json.dumps(result.as_dict(), ensure_ascii=False, indent=2))

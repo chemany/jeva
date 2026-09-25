@@ -34,7 +34,7 @@ def build_prompt(page: Page, goal: str, history=(), rules: str = DEFAULT_RULES,
     lines = [state_text, "", "Available operations:"]
     lines += [f"  {k}: {v}" for k, v in ops.items()]
     lines += ["", NOTE]
-    for op in ("CLICK", "TYPE_TEXT", "SELECT"):
+    for op in ("CLICK", "TYPE_TEXT", "SELECT", "READ"):
         if op not in ops:
             continue
         crit = target_criteria(page, op)

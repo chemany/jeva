@@ -128,6 +128,33 @@ PROMINENT_JS = r"""(() => {
 })()"""
 
 
+# A deliberately unfiltered enumeration: every visible text-bearing link and heading, in reading
+# order, with the layout facts attached. No font-size threshold, no same-site ranking -- those are
+# judgements, and the point of the content model is to make them from data rather than from rules
+# somebody wrote for one site. Whether a block is an article, a nav item, a hot-search keyword or
+# an advert is exactly what the model decides.
+ALL_BLOCKS_JS = r"""(() => {
+  const vw = innerWidth, vh = innerHeight, seen = new Set(), items = [];
+  for (const e of document.querySelectorAll('a, h1, h2, h3, h4')) {
+    const r = e.getBoundingClientRect();
+    if (!r.width || !r.height || r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw) continue;
+    if (e.checkVisibility && !e.checkVisibility({checkOpacity: true, checkVisibilityCSS: true})) continue;
+    const t = (e.innerText || '').trim().replace(/\s+/g, ' ');
+    if (t.length < 4 || t.length > 120 || seen.has(t)) continue;
+    seen.add(t);
+    const cs = getComputedStyle(e);
+    const inner = e.querySelector ? e.querySelector('a[href]') : null;
+    const url = e.href || (inner && inner.href) || '';
+    let host = ''; try { host = url ? new URL(url).hostname : ''; } catch (_) {}
+    items.push({t, href: url, host, size: parseFloat(cs.fontSize) || 0,
+                weight: Number(cs.fontWeight) || 400,
+                x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height)});
+  }
+  items.sort((a, b) => a.y - b.y || a.x - b.x);
+  return JSON.stringify(items.slice(0, 60));
+})()"""
+
+
 def fingerprint(info: dict) -> str:
     """Identity of the observable page state.
 
@@ -381,6 +408,36 @@ class Browser:
             if host == suffix or host.endswith("." + suffix):
                 return True
         return False
+
+    def content_elements(self, limit: int = 30):
+        """The blocks offered to the model as READ targets, in reading order."""
+        from .render import Element
+        out = []
+        for i, c in enumerate(self.all_blocks(limit), 1):
+            meta = f"{c.get('host') or ''} {c['size']:.0f}px col{c['column']} row{c['y']}".strip()
+            out.append((c, Element(index=str(i), role="textblock", label=c["t"],
+                                   operations=["READ"], meta=meta)))
+        return out
+
+    def all_blocks(self, limit: int = 40) -> list[dict]:
+        """Every visible text block in reading order, unfiltered. Columns are labelled left to right."""
+        try:
+            raw = self.evaluate(ALL_BLOCKS_JS)
+            items = json.loads(raw) if raw else []
+        except (StalePage, RuntimeError, json.JSONDecodeError):
+            return []
+        columns: list[float] = []
+        for it in items:
+            for c in columns:
+                if abs(it["x"] - c) < 60:
+                    it["_col"] = c
+                    break
+            else:
+                columns.append(it["x"])
+                it["_col"] = it["x"]
+        for it in items:
+            it["column"] = sorted(columns).index(it.pop("_col"))
+        return items[:limit]
 
     def prominent(self, limit: int = 10) -> list[dict]:
         """Text blocks ranked by visual prominence: the page's own typography decides, not DOM order."""

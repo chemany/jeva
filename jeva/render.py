@@ -19,12 +19,14 @@ from typing import Iterable, Optional, Sequence
 OP_ORDER = {"SELECT": 0, "TYPE_TEXT": 1, "CLICK": 2}
 _BUTTONISH = {"button", "link", "checkbox", "radio", "switch", "tab", "menuitem", "option"}
 
-OPERATIONS = ("CLICK", "TYPE_TEXT", "SELECT", "WAIT", "DONE", "BLOCKED")
+OPERATIONS = ("CLICK", "TYPE_TEXT", "SELECT", "READ", "WAIT", "DONE", "BLOCKED")
 
 OPERATION_DESCRIPTIONS = {
     "CLICK": "Click an element, button, menu option, autocomplete suggestion, or calendar day.",
     "TYPE_TEXT": "Enter or replace text in an editable field. The caller supplies the value.",
     "SELECT": "Select an observed dropdown value.",
+    "READ": ("Return the text of a block. Use this when the goal asks what the page says -- which "
+             "item is first, what a headline is -- rather than asking you to act on a control."),
     "WAIT": "Wait because an action is already in progress or the page is still loading.",
     "DONE": "Every requirement is visibly satisfied.",
     "BLOCKED": "No supported operation can progress.",
@@ -54,12 +56,23 @@ class Element:
     value: Optional[str] = None
     operations: Sequence[str] = field(default_factory=list)
     options: Sequence[Option] = field(default_factory=list)
+    # Layout facts for a readable block (host, size, column). Rendered in parentheses so the model
+    # can learn "the headline is the big one in the main column" from data instead of from rules.
+    meta: str = ""
     checked: Optional[object] = None
     selected: Optional[object] = None
     expanded: Optional[object] = None
 
     def render(self) -> str:
         bits = [f"[{self.index}] {self.role}: {_clean(self.label)}"]
+        if self.role == "textblock":
+            # A block's text is its label; there is no form value to report, and printing
+            # "not set" after a headline would be noise the model has to learn to ignore.
+            if self.meta:
+                bits.append(f"({_clean(self.meta)})")
+            if self.operations:
+                bits.append("{ops: " + ",".join(sorted(self.operations, key=lambda o: OP_ORDER.get(o, 9))) + "}")
+            return " ".join(bits)
         val = self.value
         if self.role in _BUTTONISH:
             if val not in (None, ""):
@@ -123,7 +136,7 @@ def target_criteria(page: Page, operation: str) -> dict[str, str]:
 def available_operations(page: Page) -> dict[str, str]:
     """The operations that have at least one target, plus terminal operations."""
     ops: dict[str, str] = {}
-    for op in ("CLICK", "TYPE_TEXT", "SELECT"):
+    for op in ("CLICK", "TYPE_TEXT", "SELECT", "READ"):
         if target_criteria(page, op):
             ops[op] = OPERATION_DESCRIPTIONS[op]
     ops["DONE"] = OPERATION_DESCRIPTIONS["DONE"]

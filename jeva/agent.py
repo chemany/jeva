@@ -81,6 +81,7 @@ class RunResult:
     invalid_targets: int = 0
     disagreement: list[dict] = field(default_factory=list)
     overlays_closed: list[str] = field(default_factory=list)
+    answer: dict = field(default_factory=dict)      # set when the model answered by reading
     content: list[dict] = field(default_factory=list)      # ranked visually, when asked for
 
     @property
@@ -97,7 +98,7 @@ class RunResult:
                 "steps": [s.as_dict() for s in self.steps], "elapsed_ms": self.elapsed_ms,
                 "screenshots": self.screenshots, "invalid_targets": self.invalid_targets,
                 "disagreement": self.disagreement, "overlays_closed": self.overlays_closed,
-                "content": self.content, "text": self.text[:4000]}
+                "content": self.content, "answer": self.answer, "text": self.text[:4000]}
 
 
 class Agent:
@@ -116,7 +117,8 @@ class Agent:
                  vote_temperature: float = 0.8, escalate=None, expect_url: str | None = None,
                  dismiss_overlays: bool = True):
         if not goal.strip():
-            raise ValueError("Supply a goal")
+            # --ask on a page that needs no navigation: there is nothing to drive towards.
+            goal = "(no action goal; answer the question)"
         self.url = url
         self.goal = goal.strip()
         self.jeva = jeva or Jeva()
@@ -212,8 +214,42 @@ class Agent:
         return any(p.lower() in low for p in self.irreversible)
 
     # -- the loop ----------------------------------------------------------------------------
-    def run(self, read: int = 0) -> RunResult:
-        """Drive the page. ``read`` > 0 also returns that many content blocks, ranked visually."""
+    def ask(self, question: str, limit: int = 30) -> dict:
+        """Let the model answer a question about what the page says.
+
+        The observation is only the text blocks, because that is what the content model was trained
+        on -- feeding it form controls as well would be a different distribution. The model picks a
+        block and the executor returns its text; which block answers the question is the model's
+        call, not a rule about font sizes or column positions.
+        """
+        page = self._observe()
+        blocks = self.browser.content_elements(limit)
+        if not blocks:
+            return {"error": "no text blocks observed"}
+        from .render import Page
+        elements = [el for _c, el in blocks]
+        action = self.jeva.decide(Page(elements=elements, url=page.get("url", ""),
+                                       title=page.get("title", "")), question)
+        if action.operation != "READ":
+            return {"error": f"model answered {action.operation!r} instead of READ",
+                    "raw": action.raw}
+        try:
+            picked = int(action.target)
+        except (TypeError, ValueError):
+            return {"error": f"unusable target {action.target!r}", "raw": action.raw}
+        if not 1 <= picked <= len(blocks):
+            return {"error": f"target {picked} outside 1..{len(blocks)}", "raw": action.raw}
+        cand, _el = blocks[picked - 1]
+        return {"text": cand["t"], "href": cand.get("href", ""), "host": cand.get("host", ""),
+                "block": str(picked), "size": cand["size"], "column": cand["column"],
+                "row": cand["y"], "blocks_seen": len(blocks)}
+
+    def run(self, read: int = 0, keep_open: bool = False) -> RunResult:
+        """Drive the page. ``read`` > 0 also returns that many content blocks, ranked visually.
+
+        ``keep_open`` leaves the browser up so a content question can be asked on the page the run
+        arrived at -- ``run`` otherwise closes it, and the next call would have nothing to talk to.
+        """
         started = time.perf_counter()
         result = RunResult(status="failed", reason="run did not start")
         history_lines: list[str] = []
@@ -243,6 +279,24 @@ class Agent:
                     return result
 
                 act, _elements, _targets, label = self._resolve(page, action)
+                if action.operation == "READ" and act is not None:
+                    # Reading is a terminal answer, not a step: report the block and stop. The
+                    # model decided which block answers the goal; the executor only returns it.
+                    picked = next((e for e in _elements if str(e["index"]) == str(action.target)), None)
+                    text = str((picked or {}).get("label") or "")
+                    href = str((picked or {}).get("href") or "")
+                    step = Step(n=n, operation="READ", target=action.target, text=text,
+                                label=label, url=page.get("url", ""), latency_ms=latency)
+                    self.history.append(step)
+                    result = RunResult(status="done", reason=f"read block [{action.target}]",
+                                       url=page.get("url", ""), title=page.get("title", ""),
+                                       text=str(page.get("text") or ""), steps=self.history,
+                                       elapsed_ms=int((time.perf_counter() - started) * 1000),
+                                       screenshots=self._screenshots,
+                                       invalid_targets=self.invalid_targets,
+                                       overlays_closed=self.overlays_closed)
+                    result.answer = {"text": text, "href": href, "block": action.target}
+                    return result
                 if act is None:
                     self.invalid_targets += 1
                     history_lines.append(f"{action.operation} {action.target} (rejected)")
@@ -331,7 +385,8 @@ class Agent:
                                elapsed_ms=int((time.perf_counter() - started) * 1000),
                                screenshots=self._screenshots, invalid_targets=self.invalid_targets)
         finally:
-            self.close()
+            if not keep_open:
+                self.close()
         return result
 
     def close(self) -> None:
