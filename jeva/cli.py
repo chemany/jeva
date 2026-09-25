@@ -401,7 +401,13 @@ def cmd_run(a) -> int:
         # Navigation first (if a goal was given), then the content question -- a separate call
         # because the content model was trained on text blocks only.
         if a.goal:
-            agent.run(keep_open=True)
+            nav = agent.run(keep_open=True)
+            # Without this the ask below silently answers about whatever page is open -- which,
+            # after a failed navigation, is the page we started from, and the answer looks normal.
+            if a.expect_url and nav.status in ("failed", "blocked"):
+                print(f"  navigation did not reach {a.expect_url}: {nav.status} ({nav.reason})")
+                agent.close()
+                return 2
         answer = agent.ask(a.ask)
         if a.json:
             print(json.dumps(answer, ensure_ascii=False, indent=2))
