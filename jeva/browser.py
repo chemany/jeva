@@ -409,11 +409,34 @@ class Browser:
                 return True
         return False
 
+    def settled_blocks(self, limit: int = 30, stable: int = 3, timeout: float = 8.0) -> list[dict]:
+        """Enumerate blocks once the page stops growing.
+
+        News portals fill their article lists asynchronously, so an enumeration taken too early
+        returns only the header: on gmw.cn a 3.5 s wait once yielded 15 blocks (headline absent)
+        where the settled page has 30 and the headline sits at 25. The model was then blamed for
+        choosing from a list that did not contain the answer.
+        """
+        last, unchanged, best = -1, 0, []
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            blocks = self.all_blocks(limit)
+            if len(blocks) == last:
+                unchanged += 1
+                if unchanged >= stable:
+                    return blocks
+            else:
+                unchanged, last = 0, len(blocks)
+                if len(blocks) >= len(best):
+                    best = blocks
+            time.sleep(0.3)
+        return best
+
     def content_elements(self, limit: int = 30):
         """The blocks offered to the model as READ targets, in reading order."""
         from .render import Element
         out = []
-        for i, c in enumerate(self.all_blocks(limit), 1):
+        for i, c in enumerate(self.settled_blocks(limit), 1):
             meta = f"{c.get('host') or ''} {c['size']:.0f}px col{c['column']} row{c['y']}".strip()
             out.append((c, Element(index=str(i), role="textblock", label=c["t"],
                                    operations=["READ"], meta=meta)))
