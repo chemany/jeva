@@ -45,6 +45,85 @@ FRAME_JS = """new Promise(resolve => {
 })"""
 
 
+# App-promo modals, cookie walls and ad overlays are an obstacle, not part of the goal, and on
+# Chinese portals they cover exactly the content you came for. Deterministic on purpose: whether a
+# box is a full-screen overlay is a geometry question, not a judgement call, and a click on the
+# close affordance is what a person would do -- removing the node (the obvious shortcut) can break
+# whatever state the page keeps around it.
+DISMISS_OVERLAYS_JS = r"""(() => {
+  const vw = innerWidth, vh = innerHeight, vArea = vw * vh;
+  const closed = [];
+  const isOverlay = e => {
+    for (let n = e; n && n !== document.body; n = n.parentElement) {
+      const s = getComputedStyle(n);
+      if (!['fixed', 'absolute', 'sticky'].includes(s.position)) continue;
+      const z = s.zIndex === 'auto' ? 0 : Number(s.zIndex);
+      if (z < 100) continue;
+      const r = n.getBoundingClientRect();
+      // Two tests, both needed. Area alone catches sina's "关闭置顶" strip across the top, which is
+      // a real page control: a modal is a box, a banner is a thin strip, so require real height too.
+      // Under-dismissing is the safe direction here -- guessing wrong clicks a control nobody asked for.
+      const areaOk = r.width * r.height >= vArea * 0.04;
+      const boxOk = r.height >= vh * 0.15 && r.width >= vw * 0.15;
+      if (areaOk && boxOk) return n;
+    }
+    return null;
+  };
+  // Start from the close affordance, not from the overlay: scanning big boxes misses the dialog
+  // that a full-screen mask hides inside, and cannot tell a dialog from page furniture.
+  const affordances = [...document.querySelectorAll('body *')].filter(c => {
+    const r = c.getBoundingClientRect();
+    if (!r.width || !r.height || r.width > 72 || r.height > 72) return false;
+    if (c.children.length > 0 && !(c.innerText || '').trim()) return false;
+    const name = [c.getAttribute('aria-label'), c.title, c.className, c.innerText]
+      .map(v => String(v || '')).join(' ');
+    return /close|dismiss|关闭|取消|×|✕|✖/i.test(name);
+  });
+  for (const c of affordances) {
+    const box = isOverlay(c);
+    if (!box) continue;                                  // "关闭置顶" in a header is not an overlay
+    c.click();
+    closed.push(((c.getAttribute('aria-label') || c.innerText || 'x') + '').trim().slice(0, 20));
+    if (closed.length >= 3) break;
+  }
+  return JSON.stringify(closed);
+})()"""
+
+
+# "What is the first news item" is a question about typography and position, not about meaning:
+# the headline is the largest text in the main column, and the ticker above it is set small on
+# purpose. Ranking by font size against the page's own median beats asking a model, and it is the
+# same rule a person applies when they glance at a page. Header, nav, footer and aside are skipped
+# because they hold navigation, not content -- that is what put sina's rolling ticker ahead of the
+# real headline when the DOM order was used instead.
+PROMINENT_JS = r"""(() => {
+  const vw = innerWidth, vh = innerHeight;
+  const seen = new Set(), items = [];
+  const skip = e => e.closest('header, nav, footer, aside, [role="navigation"], [role="banner"]') ||
+                    /(^|[-_])(ad|ads|advert|banner|promo)([-_]|$)/i.test(String(e.className) + ' ' + String(e.id));
+  for (const e of document.querySelectorAll('a, h1, h2, h3, h4')) {
+    if (skip(e)) continue;
+    const r = e.getBoundingClientRect();
+    if (!r.width || !r.height || r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw) continue;
+    if (e.checkVisibility && !e.checkVisibility({checkOpacity: true, checkVisibilityCSS: true})) continue;
+    const t = (e.innerText || '').trim().replace(/\s+/g, ' ');
+    if (t.length < 8 || t.length > 90 || seen.has(t)) continue;
+    seen.add(t);
+    const cs = getComputedStyle(e);
+    items.push({t, href: e.href || '', size: parseFloat(cs.fontSize) || 0,
+                weight: Number(cs.fontWeight) || 400,
+                x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width)});
+  }
+  if (!items.length) return '[]';
+  const sizes = items.map(i => i.size).sort((a, b) => a - b);
+  const median = sizes[Math.floor(sizes.length / 2)] || 12;
+  const big = items.filter(i => i.size >= median * 1.25);
+  const pool = big.length >= 3 ? big : items;
+  pool.sort((a, b) => a.y - b.y || a.x - b.x || b.size - a.size);
+  return JSON.stringify({median, count: items.length, items: pool.slice(0, 12)});
+})()"""
+
+
 def fingerprint(info: dict) -> str:
     """Identity of the observable page state.
 
@@ -263,6 +342,51 @@ class Browser:
                 time.sleep(0.1)
         raise StalePage("Page did not settle")
 
+    def dismiss_overlays(self) -> list[str]:
+        """Click the close button of anything covering the viewport, and report what was closed.
+
+        Conservative by construction: an overlay with no recognisable close affordance is left
+        alone, because guessing (removing it) can break the page instead of clearing an ad.
+        """
+        try:
+            closed = self.evaluate(DISMISS_OVERLAYS_JS)
+        except (StalePage, RuntimeError):
+            return []
+        try:
+            result = json.loads(closed) if closed else []
+        except json.JSONDecodeError:
+            result = []
+        if result:
+            self.wait_for_frame()
+        return result
+
+    def prominent(self, limit: int = 10) -> list[dict]:
+        """Text blocks ranked by visual prominence: the page's own typography decides, not DOM order."""
+        try:
+            raw = self.evaluate(PROMINENT_JS)
+        except (StalePage, RuntimeError):
+            return []
+        try:
+            data = json.loads(raw) if raw else {}
+        except json.JSONDecodeError:
+            return []
+        items = (data or {}).get("items") or []
+        median = (data or {}).get("median")
+        # Label the layout column each block sits in. Ranking is by position, so a sidebar item
+        # can land between two main-column headlines -- on sina they are four pixels apart -- and
+        # a caller asking for "the first news item" needs to be able to tell them apart. Which
+        # column is *the* content column is a layout question, so it is reported, not guessed.
+        columns: list[float] = []
+        for it in items:
+            for c in columns:
+                if abs(it["x"] - c) < 60:
+                    it["column"] = columns.index(c)
+                    break
+            else:
+                columns.append(it["x"])
+                it["column"] = len(columns) - 1
+        return [{**i, "median": median} for i in items[:limit]]
+
     def wait_for_frame(self) -> None:
         """Block until the page has painted, so the next read reflects the action just taken.
 
@@ -273,6 +397,62 @@ class Browser:
             self.evaluate(FRAME_JS, await_promise=True)
         except (StalePage, RuntimeError):
             pass
+
+    def targets(self) -> dict:
+        """Currently open page targets, keyed by target id (browser-level, not session-level)."""
+        infos = self.cdp("Target.getTargets")["targetInfos"]
+        return {t["targetId"]: t for t in infos if t.get("type") == "page"}
+
+    def follow_new_tab(self, before: dict, settle: float = 0.6) -> str | None:
+        """Move this session onto a tab the last action opened, and return its url.
+
+        News portals open almost every navigation link with ``target="_blank"`` (sina, for one,
+        marks all four of its 财经 links that way). Without this the click looks like it worked --
+        the page did change -- while the session stays on the old document forever.
+
+        A new tab pointing at the page we are already on is not progress: sina's finance channel
+        links "新浪财经" back to itself, and following that loops forever on a page that never
+        changes meaningfully. Such a tab is closed and ignored.
+        """
+        def same_page(a: str, b: str) -> bool:
+            """Compare host+path only: sina links http://finance.sina.com.cn from its own
+            https://finance.sina.com.cn page, and the scheme difference is not navigation."""
+            import urllib.parse
+            pa, pb = urllib.parse.urlparse(a), urllib.parse.urlparse(b)
+            return bool(pa.netloc) and pa.netloc == pb.netloc and pa.path.rstrip("/") == pb.path.rstrip("/")
+
+        current = ""
+        try:
+            current = self.evaluate("location.href") or ""
+        except Exception:                                             # noqa: BLE001
+            pass
+        for _ in range(20):
+            for tid, t in self.targets().items():
+                url = t.get("url", "")
+                if tid in before or tid == self.target or url in ("", "about:blank"):
+                    continue
+                if current and same_page(url, current):
+                    try:
+                        self.cdp("Target.closeTarget", targetId=tid)
+                    except Exception:                                 # noqa: BLE001
+                        pass
+                    continue
+                previous = self.target
+                self.target = tid
+                self.session = self.cdp("Target.attachToTarget", targetId=tid, flatten=True)["sessionId"]
+                self.after_input = None
+                try:
+                    self.call("Page.enable")
+                except Exception:                                     # noqa: BLE001
+                    pass
+                time.sleep(settle)
+                try:
+                    self.cdp("Target.closeTarget", targetId=previous)  # do not leak tabs
+                except Exception:                                     # noqa: BLE001
+                    pass
+                return url
+            time.sleep(0.15)
+        return None
 
     def fresh(self, page: dict) -> bool:
         """True when the page still matches the observation this decision came from.

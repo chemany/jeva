@@ -15,6 +15,7 @@ jeva itself only *decides*. This module owns the parts that make a decision safe
 from __future__ import annotations
 
 import base64
+import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -52,6 +53,7 @@ class Step:
     page_changed: bool = False
     latency_ms: int = 0
     irreversible: bool = False
+    new_tab: str = ""              # the action opened a tab; the session moved onto it
     votes: int = 0                 # samples taken before executing (0 = decided once)
     agreement: float = 1.0         # share of samples that matched
     escalated: bool = False        # the samples disagreed and a second endpoint broke the tie
@@ -60,7 +62,7 @@ class Step:
         return {"n": self.n, "operation": self.operation, "target": self.target, "text": self.text,
                 "label": self.label, "url": self.url, "page_changed": self.page_changed,
                 "latency_ms": self.latency_ms, "irreversible": self.irreversible,
-                "votes": self.votes, "agreement": self.agreement,
+                "new_tab": self.new_tab, "votes": self.votes, "agreement": self.agreement,
                 "escalated": self.escalated}
 
 
@@ -78,6 +80,8 @@ class RunResult:
     screenshots: list[str] = field(default_factory=list)
     invalid_targets: int = 0
     disagreement: list[dict] = field(default_factory=list)
+    overlays_closed: list[str] = field(default_factory=list)
+    content: list[dict] = field(default_factory=list)      # ranked visually, when asked for
 
     @property
     def ok(self) -> bool:
@@ -92,7 +96,8 @@ class RunResult:
         return {"status": self.status, "reason": self.reason, "url": self.url, "title": self.title,
                 "steps": [s.as_dict() for s in self.steps], "elapsed_ms": self.elapsed_ms,
                 "screenshots": self.screenshots, "invalid_targets": self.invalid_targets,
-                "disagreement": self.disagreement, "text": self.text[:4000]}
+                "disagreement": self.disagreement, "overlays_closed": self.overlays_closed,
+                "content": self.content, "text": self.text[:4000]}
 
 
 class Agent:
@@ -108,7 +113,8 @@ class Agent:
                  screenshot_dir: str | None = None, cdp_ws: str | None = None,
                  attach: str | bool | None = None, settle: float = 0.6,
                  fresh: bool = True, vote: int = 3, irreversible=None,
-                 vote_temperature: float = 0.8, escalate=None):
+                 vote_temperature: float = 0.8, escalate=None, expect_url: str | None = None,
+                 dismiss_overlays: bool = True):
         if not goal.strip():
             raise ValueError("Supply a goal")
         self.url = url
@@ -125,6 +131,15 @@ class Agent:
         self.vote_temperature = vote_temperature
         self.irreversible = tuple(DEFAULT_IRREVERSIBLE if irreversible is None else irreversible)
         self.escalate = escalate
+        # A 2B model trained on form state has no notion of "am I on the right page", so judging
+        # arrival is the caller's job. When a pattern is given, reaching it ends the run -- and
+        # that is *verified*, not a claim the model made.
+        self.expect_url = re.compile(expect_url) if expect_url else None
+        # Overlays are an obstacle, not part of any goal, so they are cleared by default. The
+        # detection is conservative: it only clicks recognisable close buttons on box-shaped
+        # high-z-index layers, because a wrong guess clicks a page control nobody asked for.
+        self.dismiss_overlays = dismiss_overlays
+        self.overlays_closed: list[str] = []
         self.screenshot_dir = Path(screenshot_dir) if screenshot_dir else None
         if self.screenshot_dir:
             self.screenshot_dir.mkdir(parents=True, exist_ok=True)
@@ -147,6 +162,10 @@ class Agent:
 
     # -- internals ---------------------------------------------------------------------------
     def _observe(self):
+        if self.dismiss_overlays:
+            closed = self.browser.dismiss_overlays()
+            if closed:
+                self.overlays_closed.extend(closed)
         return self.browser.observe(screenshot=False, settle=self.settle)
 
     def _screenshot(self, tag: str) -> None:
@@ -174,18 +193,35 @@ class Agent:
         label = str(act.get("label", "")).split(" → ")[0]
         return act, elements, targets, label
 
+    def _arrived(self, page: dict) -> bool:
+        return bool(self.expect_url and self.expect_url.search(page.get("url") or ""))
+
+    def _finish(self, status: str, reason: str, page: dict, started: float,
+                read: int = 0) -> RunResult:
+        self._screenshot("end")
+        return RunResult(status=status, reason=reason, url=page.get("url", ""),
+                         title=page.get("title", ""), text=str(page.get("text") or ""),
+                         steps=self.history,
+                         elapsed_ms=int((time.perf_counter() - started) * 1000),
+                         screenshots=self._screenshots, invalid_targets=self.invalid_targets,
+                         overlays_closed=self.overlays_closed,
+                         content=self.browser.prominent(read) if read else [])
+
     def is_irreversible(self, label: str) -> bool:
         low = (label or "").lower()
         return any(p.lower() in low for p in self.irreversible)
 
     # -- the loop ----------------------------------------------------------------------------
-    def run(self) -> RunResult:
+    def run(self, read: int = 0) -> RunResult:
+        """Drive the page. ``read`` > 0 also returns that many content blocks, ranked visually."""
         started = time.perf_counter()
         result = RunResult(status="failed", reason="run did not start")
         history_lines: list[str] = []
         try:
             page = self._observe()
             self._screenshot("start")
+            if self._arrived(page):
+                return self._finish("done", "already at the expected page", page, started, read)
             for n in range(1, self.max_steps + 1):
                 elements, _targets, _controls = action_space(page["actions"])
                 action = self.jeva.decide(to_page(page, elements), self.goal, history_lines)
@@ -254,7 +290,10 @@ class Agent:
                 # Record before acting: a stale observation after the action must not lose the step.
                 self.history.append(step)
                 try:
+                    opened = self.browser.targets()
                     self.browser.act(act, page, text=action.text)
+                    # A link may have opened a tab instead of navigating this one.
+                    step.new_tab = self.browser.follow_new_tab(opened) or ""
                 except StalePage as exc:
                     step.label = f"{label} (stale: {exc})"
                     page = self._observe()
@@ -266,6 +305,9 @@ class Agent:
                 history_lines.append(f"{action.operation} {label}"
                                      + (f" = {action.text!r}" if action.text else ""))
                 self._screenshot(f"step{n}")
+
+                if self._arrived(page):
+                    return self._finish("done", f"reached {self.expect_url.pattern}", page, started, read)
 
                 recent = self.history[-NO_PROGRESS_LIMIT:]
                 if len(recent) == NO_PROGRESS_LIMIT and all(not s.page_changed for s in recent):

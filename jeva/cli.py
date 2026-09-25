@@ -334,6 +334,17 @@ def build_parser() -> argparse.ArgumentParser:
                        help="OPTIONAL. On disagreement, re-decide against this OpenAI-compatible "
                             "endpoint instead of stopping. Nothing here requires a second model; "
                             "if you have none, leave it unset and the run stops instead")
+    r.add_argument("--read", type=int, default=0, metavar="N",
+                   help="also return the N most prominent content blocks (by font size against "
+                        "the page's own median, in reading order) so you do not have to parse the "
+                        "raw page text to answer 'what does it say'")
+    r.add_argument("--keep-overlays", action="store_true",
+                   help="do not clear modals/popups. They are dismissed by default: on Chinese "
+                        "portals a promo layer usually covers exactly the content you came for")
+    r.add_argument("--expect-url", metavar="REGEX",
+                   help="stop as soon as the URL matches. Use this for 'go to page X' goals: a 2B "
+                        "model trained on form state cannot tell it has arrived, but the caller can, "
+                        "and matching here is verified rather than claimed")
     r.add_argument("--json", action="store_true", help="print the full result as JSON")
     r.set_defaults(func=cmd_run)
 
@@ -378,8 +389,9 @@ def cmd_run(a) -> int:
                   attach=a.attach, fresh=persistent is None,
                   screenshot_dir=a.screenshots, settle=a.settle,
                   vote=a.vote, irreversible=a.irreversible, vote_temperature=a.vote_temperature,
-                  escalate=escalate)
-    result = agent.run()
+                  escalate=escalate, expect_url=a.expect_url,
+                  dismiss_overlays=not a.keep_overlays)
+    result = agent.run(read=a.read)
     if a.json:
         print(json.dumps(result.as_dict(), ensure_ascii=False, indent=2))
     else:
@@ -391,6 +403,16 @@ def cmd_run(a) -> int:
                 note += f"  [irreversible, {s.votes} samples agreed]"
             print(f"  [{s.n:02d}] {s.operation:<9s} {s.target:<6s} {s.label[:44]:<46s} "
                   f"{s.text!r}{note}")
+        if result.overlays_closed:
+            print(f"  cleared overlays: {', '.join(result.overlays_closed)}")
+        if result.content:
+            print(f"\n  content (ranked by prominence, page median "
+                  f"{result.content[0].get('median', '?')}px):")
+            for i, c in enumerate(result.content, 1):
+                where = f"y={c['y']} col{c.get('column', 0)}" if "y" in c else ""
+                print(f"   {i:2d}. [{c.get('size', 0):.0f}px {where}] {c['t'][:70]}")
+                if c.get("href"):
+                    print(f"       {c['href'][:88]}")
         print(f"\n  {result.status.upper()}: {result.reason}")
         print(f"  ended at {result.url}")
         print(f"  {len(result.steps)} steps, {result.elapsed_ms} ms, "
