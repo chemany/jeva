@@ -112,7 +112,9 @@ PROMINENT_JS = r"""(() => {
     const cs = getComputedStyle(e);
     // Headlines are often an <h2> wrapping an <a>; e.href is undefined on the heading itself.
     const inner = e.querySelector ? e.querySelector('a[href]') : null;
-    items.push({t, href: e.href || (inner && inner.href) || '', size: parseFloat(cs.fontSize) || 0,
+    const url = e.href || (inner && inner.href) || '';
+    let host = ''; try { host = url ? new URL(url).hostname : ''; } catch (_) {}
+    items.push({t, href: url, host, size: parseFloat(cs.fontSize) || 0,
                 weight: Number(cs.fontWeight) || 400,
                 x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width)});
   }
@@ -362,6 +364,24 @@ class Browser:
             self.wait_for_frame()
         return result
 
+    @staticmethod
+    def _same_site(host: str, page_host: str) -> bool:
+        """True when ``host`` belongs to the same site family as the page.
+
+        Sina's sports page ranks a Weibo hot-search widget above its own articles: those blocks are
+        smaller and higher up, so typography alone promotes them. They link to a different domain,
+        and news links stay inside the publication -- so this is the signal that separates a
+        sidebar widget from the content the page actually publishes.
+        """
+        if not host or not page_host or host == page_host:
+            return True
+        parts = page_host.split(".")
+        for i in range(len(parts) - 1):
+            suffix = ".".join(parts[i:])
+            if host == suffix or host.endswith("." + suffix):
+                return True
+        return False
+
     def prominent(self, limit: int = 10) -> list[dict]:
         """Text blocks ranked by visual prominence: the page's own typography decides, not DOM order."""
         try:
@@ -378,15 +398,25 @@ class Browser:
         # can land between two main-column headlines -- on sina they are four pixels apart -- and
         # a caller asking for "the first news item" needs to be able to tell them apart. Which
         # column is *the* content column is a layout question, so it is reported, not guessed.
+        # Numbered left to right, not in order of appearance: a sidebar high on the page used to
+        # become "column 0", which reads as if it were the main content.
         columns: list[float] = []
         for it in items:
             for c in columns:
                 if abs(it["x"] - c) < 60:
-                    it["column"] = columns.index(c)
+                    it["_col"] = c
                     break
             else:
                 columns.append(it["x"])
-                it["column"] = len(columns) - 1
+                it["_col"] = it["x"]
+        for it in items:
+            it["column"] = sorted(columns).index(it.pop("_col"))
+        import urllib.parse
+        page_host = urllib.parse.urlparse(self.evaluate("location.href") or "").hostname or ""
+        for it in items:
+            it["external"] = not self._same_site(it.get("host", ""), page_host)
+        # Content the page publishes outranks a widget that merely sits higher on the screen.
+        items.sort(key=lambda i: (i["external"], i["y"], i["x"]))
         return [{**i, "median": median} for i in items[:limit]]
 
     def wait_for_frame(self) -> None:

@@ -410,7 +410,8 @@ def cmd_run(a) -> int:
                   f"{result.content[0].get('median', '?')}px):")
             for i, c in enumerate(result.content, 1):
                 where = f"y={c['y']} col{c.get('column', 0)}" if "y" in c else ""
-                print(f"   {i:2d}. [{c.get('size', 0):.0f}px {where}] {c['t'][:70]}")
+                host = (c.get("host") or "") + (" (external)" if c.get("external") else "")
+                print(f"   {i:2d}. [{c.get('size', 0):.0f}px {where}] {host:<28s} {c['t'][:52]}")
                 if c.get("href"):
                     print(f"       {c['href'][:88]}")
         print(f"\n  {result.status.upper()}: {result.reason}")
