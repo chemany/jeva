@@ -14,7 +14,7 @@ import json
 import random
 from pathlib import Path
 
-from build_dataset import TITLE_POOL, URL_POOL, randomise_surface
+from surface import randomise_surface
 
 
 def main() -> None:

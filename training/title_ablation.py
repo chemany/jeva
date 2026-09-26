@@ -1,12 +1,23 @@
-"""Acceptance test: does the same page get the same decision when only the title changes?
+"""Acceptance test: does the same page get the same, valid decision when only the title changes?
 
 Found while wiring jev-ultrafast to the System One front end. Same elements, same goal, eight
 different page titles -- and "which operation for this text field" was answered correctly twice.
 During collection each page's title was fixed, so the title acted as a proxy for the layout and the
 model learned the pairing.
 
-A page title carries no information about which operation a field needs, so a model whose answer
-depends on it cannot be trusted with an unfamiliar site. This harness reports the spread directly.
+Two things are scored, because the first version of this test scored only one of them and got the
+conclusion wrong:
+
+* **invariance** -- a title says nothing about what to do, so every title must produce the same
+  answer. This is the property that was broken.
+* **validity** -- the answer must be an action that advances the goal. An earlier version demanded
+  one specific operation and scored `CLICK 2` (tick the "One way" radio, which the goal requires and
+  which is not ticked) as a failure, although the end-to-end run takes exactly that step and
+  completes. Choice of which page requirement to satisfy first is not correctness.
+
+Titles are generated fresh on each run. A fixed list drawn from the training pool once reported 9/10
+for a model that was in fact answering 7/12 on titles outside it: it had memorised the pool and was
+reading the title as a task identifier.
 
     python title_ablation.py --url http://127.0.0.1:8020/v1 --model jeva
 """
@@ -14,11 +25,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import sys
 import urllib.request
-from pathlib import Path
 
 sys.path.insert(0, "/root/code/jeva")
+sys.path.insert(0, "/root/code/jeva-content")
 from jeva.prompt import SYSTEM, build_prompt                      # noqa: E402
 from jeva.render import Element, Option, Page                     # noqa: E402
 
@@ -40,11 +52,17 @@ ELEMENTS = [
             options=[Option(index="7:1", label="2 adults"), Option(index="7:2", label="3 adults")]),
     Element(index="8", role="button", label="Search", operations=["CLICK"]),
 ]
-TITLES = ["Flight Search", "Search flights", "Flights", "Flight search", "Book a flight",
-          "Airline tickets", "Google Flights", "飞机票搜索", "Travel", "Plan your trip"]
 
-# The first thing this page needs is text in a field, so the first operation must be TYPE_TEXT.
-EXPECTED_OPERATION = "TYPE_TEXT"
+# Actions that move this page toward the goal. Clicking a text field is not among them: the prompt
+# says CLICK only opens it, and the goal needs text in it.
+ACCEPTABLE = {
+    ("CLICK", "2"),          # tick One way -- the goal asks for one-way and neither radio is ticked
+    ("TYPE_TEXT", "3"),      # Zurich
+    ("TYPE_TEXT", "4"),      # London
+    ("TYPE_TEXT", "5"),      # September 20, 2026
+    ("SELECT", "6:2"),       # Business
+    ("SELECT", "7:1"),       # 2 adults
+}
 
 
 def ask(prompt: str, url: str, model: str, temperature: float = 0) -> tuple[str, str]:
@@ -57,9 +75,10 @@ def ask(prompt: str, url: str, model: str, temperature: float = 0) -> tuple[str,
     with urllib.request.urlopen(req, timeout=120) as resp:
         text = (json.loads(resp.read().decode())["choices"][0]["message"].get("content") or "").strip()
     try:
-        return json.loads(text[text.find("{"):text.rfind("}") + 1]).get("operation", "?"), text
+        obj = json.loads(text[text.find("{"):text.rfind("}") + 1])
+        return obj.get("operation", "?"), str(obj.get("target", "?"))
     except json.JSONDecodeError:
-        return "?", text
+        return "?", "?"
 
 
 def main() -> int:
@@ -67,20 +86,27 @@ def main() -> int:
     ap.add_argument("--url", default="http://127.0.0.1:8020/v1")
     ap.add_argument("--model", default="jeva")
     ap.add_argument("--temperature", type=float, default=0.0)
+    ap.add_argument("--seed", type=int, default=11)
+    ap.add_argument("--count", type=int, default=12)
     a = ap.parse_args()
 
-    hits, answers = 0, []
-    for title in TITLES:
+    from surface import random_title
+    rng = random.Random(a.seed)
+    answers = []
+    for _ in range(a.count):
+        title = random_title(rng)
         page = Page(elements=ELEMENTS, url="https://example.com/flights", title=title)
-        operation, _raw = ask(build_prompt(page, GOAL), a.url, a.model, a.temperature)
-        good = operation == EXPECTED_OPERATION
-        hits += good
-        answers.append(operation)
-        print(f"  {title:<18s} -> {operation:<10s} {'ok' if good else 'WRONG'}")
+        operation, target = ask(build_prompt(page, GOAL), a.url, a.model, a.temperature)
+        answers.append((operation, target))
+        valid = (operation, target) in ACCEPTABLE
+        print(f"  {title[:30]:<32s} -> {operation:<10s} {target:<5s} "
+              f"{'' if valid else 'NOT A GOAL STEP'}")
     distinct = len(set(answers))
-    print(f"\n  {a.model}: {hits}/{len(TITLES)} correct, {distinct} distinct answers for one page")
-    print("  A model that reads the state answers this the same way every time.")
-    return 0 if hits == len(TITLES) else 1
+    valid_n = sum(1 for x in answers if x in ACCEPTABLE)
+    print(f"\n  {a.model}: {distinct} distinct answer(s) for one page "
+          f"({'invariant' if distinct == 1 else 'TITLE-DEPENDENT'}), "
+          f"{valid_n}/{a.count} valid")
+    return 0 if distinct == 1 and valid_n == a.count else 1
 
 
 if __name__ == "__main__":

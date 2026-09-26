@@ -12,6 +12,8 @@ from __future__ import annotations
 import argparse
 import json
 import random
+
+from surface import randomise_surface
 import sys
 from pathlib import Path
 
@@ -19,23 +21,6 @@ sys.path.insert(0, "/root/code/jeva")
 from jeva.prompt import SYSTEM, build_prompt, DEFAULT_RULES          # noqa: E402
 from jeva.render import Element, Page                                # noqa: E402
 
-# Incidental strings, rewritten on every example.
-#
-# Measured before this existed: the same element table and the same goal, with only the page title
-# changed, produced two different operations -- 5/10 correct on `title_ablation.py`. During
-# collection each page's title was fixed, so the title acted as a proxy for the layout and the model
-# learned the pairing. Neither the title nor the URL carries information about which operation a
-# field needs, so both are randomised and the model has to read the element table instead.
-TITLE_POOL = [
-    "Flight Search", "Search flights", "Flights", "Flight search", "Book a flight", "Airline tickets",
-    "Google Flights", "飞机票搜索", "Travel", "Plan your trip", "Booking", "Home", "首页",
-    "Pizza order", "Contact us", "Sign up", "Hotel search", "Checkout", "搜索结果", "Welcome",
-]
-URL_POOL = [
-    "https://example.com/flights", "https://example.com/book", "https://example.com/order",
-    "https://travel.example.org/search", "http://127.0.0.1:8899/flights.html",
-    "https://example.com/checkout", "https://example.com/signup", "https://example.com/",
-]
 
 GOALS = [
     "What is the first news article on this page?",
@@ -48,16 +33,6 @@ GOALS = [
 def to_element(i: int, c: dict) -> Element:
     meta = f"{c.get('host') or ''} {c['size']:.0f}px col{c['column']} row{c['y']}".strip()
     return Element(index=str(i), role="textblock", label=c["t"], operations=["READ"], meta=meta)
-
-
-def randomise_surface(prompt: str, rng: random.Random) -> str:
-    """Replace the page title and url with plausible others, keeping the format byte for byte."""
-    lines = prompt.split("\n")
-    for i, line in enumerate(lines):
-        if line.startswith("Page: "):
-            lines[i] = f"Page: {rng.choice(TITLE_POOL)}  ({rng.choice(URL_POOL)})"
-            break
-    return "\n".join(lines)
 
 
 def make_example(cands: list[dict], content: set[int], goal: str, url: str, title: str,
