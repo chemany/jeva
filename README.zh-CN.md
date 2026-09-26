@@ -27,6 +27,8 @@ jeva 接收「一次页面观察 + 一个目标」，输出**恰好一个动作*
 - **一次决策、一次调用，约 250 毫秒。** 2B 参数，Q4_K_M 量化后仅 1.6 GB，单张 V100 跑 llama.cpp 即可。
 - **带类型的动作空间。** `CLICK` · `TYPE_TEXT` · `SELECT` · `WAIT` · `DONE` · `BLOCKED`，目标是**你提供的那份观察**里的元素序号。
 - **不会自己编选择器。** 模型只返回序号，由执行器在**同一份快照**上解析。它永远不输出 CSS、坐标或 JavaScript。
+- **答案不随页面标题变化。** 同一个页面配 12 个全新生成的标题：只有 1 种答案，12/12 都是推进目标的有效步。上一版会给出 3 种不同答案。
+- **说的正是 jev-ultrafast 已经在用的协议。** `jeva systemone` 实现 TypeSafe 的 `/v1/systemone`，换任何现有智能体只需改一行。
 - **在冻结测试集上 100% 完成任务**，其中包括一个标签体系与布局从未出现在训练中的站点。
 - **零人工标注。** 2,600 个任务产出 10,686 条训练轨迹，采集约 30 分钟；训练是一轮 LoRA，单张 V100 约 75 分钟。
 - **代码齐全**：采集器、训练脚本、合并/量化流程、三个测试站点、以及冻结的评测结果。
@@ -101,8 +103,51 @@ python examples/quickstart.py            # 用内置的示例观察
 
 ## 驱动浏览器
 
-**jeva 只是 API，别的都不是。** 它接收一份观察和一个目标，返回一个动作。驱动是调用它的智能体软件的职责，
-本仓库集成的是参考实现：
+**jeva 只是 API，别的都不是。** 它接收一份观察和一个目标，返回一个动作。驱动是调用它的智能体软件的职责。
+有两种接法，**推荐第一种**。
+
+### 一、直接替换 jev-ultrafast（只改一行）
+
+[jev-ultrafast](https://github.com/browser-use/jev-ultrafast) 用 browser-harness 驱动真实 Chrome，与
+TypeSafe 的 System One 接口对话——它 POST `{state, questions}`，期望拿回 `{answers}`。jeva 实现了这个协议，
+所以**只要改基地址，别的什么都不用动**：
+
+```bash
+jeva serve --variant Q4_K_M &        # jeva 模型服务                              (:8020)
+jeva systemone --port 8021           # 架在它前面的 System One 前端               (:8021)
+```
+
+```python
+# jev_ultrafast/model.py
+BASE_URL = "http://127.0.0.1:8021"   # 原为 https://api.typesafe.ai
+```
+
+其它文件一律不改。浏览器层、循环与守卫——新鲜度校验、决策一次性消费、重复动作熔断——**全部原样运行**。
+机票测试页实测：
+
+```
+CLICK     2   One way
+TYPE_TEXT 3   Where from?   'Zurich'
+TYPE_TEXT 4   Where to?     'London'
+TYPE_TEXT 5   Departure     'Sep 20, 2026'
+SELECT  6:2   Cabin → Business
+SELECT  7:1   Passengers → 2 adults
+CLICK     8   Search
+DONE | 14.1 秒 | flight-results.html?trip=oneway&from=Zurich&to=London&cabin=Business&pax=2+adults
+```
+
+**依赖它之前，有两点必须知道。**
+
+一是 `answers` 本质是选择，而 System One 的校验器要求「在给定选项上的分布、且和为 1.0」，所以每个都是
+**one-hot**。它**没有校准**——而且它也当不了可靠性信号：答对时 top-1 中位数是 48%，**答错时反而是 80%**。
+
+二是 System One 的问题**从不返回自由文本**，所以 `TYPE_TEXT` 要填的值走不了 `answers`。jeva 确实会给出这个值，
+放在一个附加的 `jeva` 键里；不去看它的客户端自然忽略。上面那次运行，文本值来自智能体自己配置的文本模型，
+**不是 jeva**。
+
+### 二、进程内适配器
+
+如果你更愿意替换 model 可调用对象、而不是起一个服务：
 
 ```bash
 git clone https://github.com/browser-use/jev-ultrafast /tmp/jev-ultrafast
@@ -112,12 +157,9 @@ python integrations/jev-ultrafast/run.py \
   "http://127.0.0.1:8899/flights.html"
 ```
 
-[browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) 提供浏览器层（browser-harness，
-驱动真实 Chrome）、循环与守卫——新鲜度校验、决策一次性消费、重复动作熔断。它的 `agent.py`、`browser.py`、
-`snapshot.js` **一行未改**，只替换了 `choose()` 与 `field_text()`。实测：机票测试页 **4.4 秒**，
-线上 httpbin 表单 **5.2 秒**。
-
-细节（含 jeva 强制的三处适配）见 [integrations/jev-ultrafast/README.md](integrations/jev-ultrafast/README.md)。
+同样地，`agent.py`、`browser.py`、`snapshot.js` 一行未改，只替换了 `choose()` 与 `field_text()`。
+实测：机票测试页 **4.4 秒**，线上 httpbin 表单 **5.2 秒**。细节（含 jeva 强制的三处适配）见
+[integrations/jev-ultrafast/README.md](integrations/jev-ultrafast/README.md)。
 
 `evals/` 下的浏览器层是**采集与评测用的夹具**，不是产品驱动，也不打算成为产品驱动。
 
@@ -128,14 +170,14 @@ python integrations/jev-ultrafast/run.py \
 | **jeva**（本次发布） | MiniCPM5-2B | 2.5B（非嵌入 2.0B） | 已合并，HF | 5.0 GB | **100%** | 1500 ms（朴素 HF） |
 | jeva · GGUF F16 | ” | ” | llama.cpp | 5.04 GB | 100% | ~230 ms |
 | **jeva · GGUF Q8_0** | ” | ” | llama.cpp | 2.68 GB | **100%** | **283 ms** |
-| **jeva · GGUF Q4_K_M** | ” | ” | llama.cpp | **1.56 GB** | **100%** | **229 ms** |
+| **jeva · GGUF Q4_K_M** | ” | ” | llama.cpp | **1.56 GB** | **100%** | **236 ms** |
 | MiniCPM5-2B（未训练） | — | 2.5B | llama.cpp | 1.56 GB | 10%（100 题） | 147 ms |
 | Bonsai-27B（零样本） | Qwen3.8-27B | 27B | GGUF q4_0 | 14 GB | 92.5%（40 题） | 1769 ms |
 
 所有形态都在 [ModelScope](https://modelscope.cn/models/imjasonli/jeva) 上：GGUF 放在 `gguf/` 下，
 合并后的 transformer 权重放在同一仓库根目录。`jeva download` 即从那里取回。
 
-量化在这里**没有代价**：三档 GGUF 在同一批测试上都是 **100%**。
+量化在这里**没有代价**：三档 GGUF 在同一批测试上都是 **100%**。 同一个 40 题测试在 F16 上跑五次，四次 40/40、一次 39/40：开了 flash attention 的 llama.cpp 并非逐位确定，单次 39/40 重跑即可，不是回归。
 同一提示词下，未训练的基座只有 **10%**——它会反复点击已勾选的单选框、该用 `TYPE_TEXT` 的地方用
 `CLICK`，100 个任务里有 18 次编造了不存在的元素序号。
 
@@ -205,6 +247,21 @@ cheese」，也就是标签必须**按语义**匹配、而非按字面——并�
 | **`site3`（从未训练，标签全新）** | 40 | **100%** |
 | 线上 `httpbin.org/forms/post`（从未训练，真实标记） | 4 次 | 见[上文](#真实站点抽查) |
 
+### 不变性：同一页面换标题
+
+页面标题不携带「某个字段该用哪个操作」的任何信息，所以标题变了答案就不该变。它以前会变。
+元素与目标保持不变，标题每次全新生成：
+
+| 模型 | 同一页面的不同答案数 | 有效步 |
+|---|---|---|
+| v9 | 3（**依赖标题**） | 10/12 |
+| v11 | 3（**依赖标题**） | 8/12 |
+| **v12**（本次发布） | **1（不变）** | **12/12** |
+
+这个数比看上去更重要。采集时每个页面的标题是固定的，于是**标题成了版式的代理**，模型把这个配对学了进去——这正是它在标题各异的真实站点上失败的原因。用二十个像样标题的词池并不够：词池外的标题只有 7/12，而抽自词池的测试却报 9/10，**因为模型把词池背下来了**。v12 改为从词表拼装标题——10,686 条动作样本里有 7,954 种不同标题——**没有东西可背了**。
+
+由 `training/title_ablation.py` 测量。
+
 ### 是什么把数字推上去的
 
 | 改动 | 效果 |
@@ -262,7 +319,7 @@ Recent actions: CLICK Round trip
 
 ## 接口
 
-jeva 就是一个普通的 OpenAI 兼容 chat 端点，服务端不需要安装任何东西。
+jeva 就是一个普通的 OpenAI 兼容 chat 端点，服务端不需要安装任何东西。 在它之上可以用 `jeva systemone` 起一个 System One 前端——见[驱动浏览器](#驱动浏览器)。
 
 ```bash
 curl -s localhost:8020/v1/chat/completions -H 'content-type: application/json' -d '{

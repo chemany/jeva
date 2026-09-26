@@ -26,11 +26,38 @@ action** as compact JSON — no prose, and no invented selectors.
 
 - **Base model:** [`openbmb/MiniCPM5-2B`](https://modelscope.cn/models/OpenBMB/MiniCPM5-2B) (Apache-2.0)
 - **Method:** LoRA SFT (r=16, α=32, 1 epoch), then **merged into the base weights** — this release is a full model, not an adapter
-- **Training data:** 10,686 trajectories from driving a real Chrome with a deterministic solver — **zero human labels, no teacher model**
+- **Training data:** 10,686 trajectories from driving a real Chrome with a deterministic solver — **zero human labels, no teacher model**. Page titles and urls are randomly assembled in training so the model cannot key on them
 - **Weights:** this repository holds the merged transformer weights at the root and the GGUF
   variants (F16 / Q8_0 / Q4_K_M) under `gguf/`
 - **Project / training code:** <https://github.com/chemany/jeva>
 - **License:** Apache-2.0
+
+## Drop-in for jev-ultrafast
+
+[jev-ultrafast](https://github.com/browser-use/jev-ultrafast) drives a real Chrome and talks to
+TypeSafe's System One API, POSTing `{state, questions}` and expecting `{answers}`. jeva serves that
+protocol, so an existing install is repointed by changing the base URL and nothing else:
+
+```bash
+jeva serve --variant Q4_K_M &        # the model                                     (:8020)
+jeva systemone --port 8021           # a System One front end in front of it        (:8021)
+```
+
+```python
+# jev_ultrafast/model.py
+BASE_URL = "http://127.0.0.1:8021"   # was https://api.typesafe.ai
+```
+
+Everything else -- the browser layer, the loop, the staleness checks, the one-shot decision guard,
+the repeat detector -- runs unmodified. On the flight fixture it completes in 14.1 s with every
+parameter correct.
+
+Two things to know. The System One validator requires a distribution over the offered options
+summing to 1.0, so the probabilities emitted are a **one-hot**; they are not calibrated, and could
+not be used as a reliability signal even if they were (correct answers carry a median top-1 of 48%,
+wrong ones 80%). And System One questions never return free text, so a `TYPE_TEXT` value cannot
+travel in `answers`; jeva does produce one and adds it under an extra `jeva` key that other clients
+ignore.
 
 ## What it does
 
@@ -59,7 +86,7 @@ trusted.
 |---|---|---|---|---|---|
 | MiniCPM5-2B (base, zero-shot) | 2B | 10% | — | — | 147 ms |
 | Bonsai-27B (zero-shot) | 27B | 92.5% (40 tasks) | — | — | 1769 ms |
-| **jeva** | **2B** | **100%** | **100%** | **100%** | **229 ms** (Q4_K_M) |
+| **jeva** | **2B** | **100%** | **100%** | **100%** | **236 ms** (Q4_K_M) |
 
 Per task type on Site 1:
 
@@ -217,7 +244,12 @@ the student has to learn state tracking from the state alone.
 - **Narrow action space:** no `SCROLL`, no file uploads, no multi-step dropdown widgets.
 - Trained on form-shaped flows (search / filter / form / autocomplete); off-distribution behaviour is not characterised.
 - **Prompt-sensitive** — changing the system prompt or state layout degrades output.
-- Not a general assistant, and it does not return calibrated probabilities.
+- Not a general assistant, and it does not return calibrated probabilities. Under the System One
+  interface a one-hot is emitted because the protocol requires a distribution; it is not a
+  confidence.
+- The page title no longer affects the answer: over one unchanged page and twelve freshly generated
+  titles it gives one distinct, valid answer, where earlier revisions gave three. Other incidental
+  surface strings were not ablated, so a milder form of the same defect may remain.
 - Evaluated on three synthetic sites in real Chrome, not on production websites; the 27B baseline rests on 10 tasks.
 
 ## License

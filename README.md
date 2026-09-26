@@ -28,6 +28,8 @@ beyond your usual inference stack.
 - **One decision, one call, ~230 ms.** 2B parameters, 1.6 GB as a Q4_K_M GGUF, running under llama.cpp on a single V100.
 - **Typed action space.** `CLICK` · `TYPE_TEXT` · `SELECT` · `WAIT` · `DONE` · `BLOCKED`, targeting indices from the observation you supplied.
 - **No invented selectors.** The model returns an index; your executor resolves it against the same snapshot. It never emits CSS, coordinates, or JavaScript.
+- **Answers do not move with the page title.** Twelve freshly generated titles over one unchanged page: one distinct answer, twelve valid goal steps. The previous revision gave three different answers.
+- **Speaks the protocol jev-ultrafast already uses.** `jeva systemone` serves TypeSafe's `/v1/systemone`, so repointing an existing agent is a one-line change.
 - **100% task success on the frozen suites**, including a site whose label vocabulary and layout never appear in training.
 - **Zero human labels.** 10,686 training trajectories from 2,600 tasks, collected in ~30 minutes; training is one LoRA pass, ~75 minutes on one V100.
 - **Everything included**: the collector, the training script, the merge/quantise pipeline, the three test sites, and the frozen eval results.
@@ -105,7 +107,51 @@ python examples/quickstart.py            # uses the built-in demo observation
 ## Driving a browser
 
 **jeva is the API and nothing else.** It takes an observation and a goal and returns one action.
-Driving belongs to the agent software that calls it, and this repo integrates the reference one:
+Driving belongs to the agent software that calls it. Two ways to connect it, and the first is the
+one to use.
+
+### 1. Drop-in for jev-ultrafast (one line changed)
+
+[jev-ultrafast](https://github.com/browser-use/jev-ultrafast) drives a real Chrome through
+browser-harness and talks to TypeSafe's System One API -- it POSTs `{state, questions}` and expects
+`{answers}`. jeva serves that protocol, so an existing install is repointed by editing the base URL
+and nothing else:
+
+```bash
+jeva serve --variant Q4_K_M &        # a jeva model server                           (:8020)
+jeva systemone --port 8021           # a System One front end in front of it         (:8021)
+```
+
+```python
+# jev_ultrafast/model.py
+BASE_URL = "http://127.0.0.1:8021"   # was https://api.typesafe.ai
+```
+
+No other file changes. The browser layer, the loop and the guards -- staleness checks, one-shot
+decisions, a repeat detector -- run **unmodified**. Measured on the flight fixture:
+
+```
+CLICK     2   One way
+TYPE_TEXT 3   Where from?   'Zurich'
+TYPE_TEXT 4   Where to?     'London'
+TYPE_TEXT 5   Departure     'Sep 20, 2026'
+SELECT  6:2   Cabin → Business
+SELECT  7:1   Passengers → 2 adults
+CLICK     8   Search
+DONE | 14.1 s | flight-results.html?trip=oneway&from=Zurich&to=London&cabin=Business&pax=2+adults
+```
+
+**Two things to know before relying on this.** The `answers` are choices, and System One's validator
+requires a distribution over exactly the offered options summing to 1.0, so each is a **one-hot**.
+It is not calibrated -- and it could not be used as a confidence signal anyway: correct answers carry
+a median top-1 of 48%, wrong ones 80%. Second, System One questions never return free text, so the
+value for a `TYPE_TEXT` cannot travel in `answers`; jeva does produce one and it is added under an
+extra `jeva` key, which a client that does not look there ignores. The run above takes its text
+values from whatever text model the agent is configured with, not from jeva.
+
+### 2. In-process adapter
+
+If you would rather swap the model callable than run a server:
 
 ```bash
 git clone https://github.com/browser-use/jev-ultrafast /tmp/jev-ultrafast
@@ -115,13 +161,9 @@ python integrations/jev-ultrafast/run.py \
   "http://127.0.0.1:8899/flights.html"
 ```
 
-[browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) supplies the browser layer
-(browser-harness, driving a real Chrome), the loop, and the guards -- staleness checks, one-shot
-decisions, a repeat detector. `agent.py`, `browser.py` and `snapshot.js` run **unmodified**; only
-`choose()` and `field_text()` are swapped. Measured: **4.4 s** for the flight fixture, **5.2 s** for
-the live httpbin form.
-
-Details, including the three adaptations jeva forces, are in
+Here `agent.py`, `browser.py` and `snapshot.js` are again untouched; only `choose()` and
+`field_text()` are swapped. Measured: **4.4 s** for the flight fixture, **5.2 s** for the live
+httpbin form. Details, including the three adaptations jeva forces, are in
 [integrations/jev-ultrafast/README.md](integrations/jev-ultrafast/README.md).
 
 The harness under `evals/` is a fixture harness for collecting and evaluating trajectories. It is
@@ -134,7 +176,7 @@ not a production driver and does not aim to be one.
 | **jeva** (this release) | MiniCPM5-2B | 2.5B (2.0B non-embed) | merged, HF | 5.0 GB | **100%** | 1500 ms (naive HF) |
 | jeva · GGUF F16 | ” | ” | llama.cpp | 5.04 GB | 100% | ~250 ms |
 | **jeva · GGUF Q8_0** | ” | ” | llama.cpp | 2.68 GB | **100%** | **283 ms** |
-| **jeva · GGUF Q4_K_M** | ” | ” | llama.cpp | **1.56 GB** | **100%** | **229 ms** |
+| **jeva · GGUF Q4_K_M** | ” | ” | llama.cpp | **1.56 GB** | **100%** | **236 ms** |
 | MiniCPM5-2B (untrained) | — | 2.5B | llama.cpp | 1.56 GB | 10% (100 tasks) | 147 ms |
 | Bonsai-27B (zero-shot) | Qwen3.8-27B | 27B | GGUF q4_0 | 14 GB | 92.5% (40 tasks) | 1769 ms |
 
@@ -143,6 +185,7 @@ The GGUF variants live under `gguf/` on
 root of the same repository. `jeva download` fetches them from there.
 
 Quantisation costs nothing here: all three GGUF variants score **100%** on the same suites.
+Five runs of the same 40-task suite on the F16 build give 40/40 four times and 39/40 once: llama.cpp with flash attention is not bit-deterministic across runs, so a single 39/40 is a re-run, not a regression.
 The untrained base on the same prompt scores **10%** — it loops on already-checked radios, uses
 `CLICK` where `TYPE_TEXT` is required, and invents element indices 18 times in 100 tasks.
 
@@ -220,6 +263,24 @@ holdout: it was never used for training, and its labels are entirely different
 | **`site3` (never trained, new labels)** | 40 | **100%** |
 | live `httpbin.org/forms/post` (never trained, real markup) | 4 runs | see [above](#real-site-spot-check) |
 
+### Invariance: the same page under a different title
+
+A page title says nothing about which operation a field needs, so the answer must not move when it
+changes. It did. Held-out elements and goal constant, twelve freshly generated titles:
+
+| Model | Distinct answers for one page | Valid goal steps |
+|---|---|---|
+| v9 | 3 (**title-dependent**) | 10/12 |
+| v11 | 3 (**title-dependent**) | 8/12 |
+| **v12** (this release) | **1 (invariant)** | **12/12** |
+
+This is measured by `training/title_ablation.py` and is worth more than it looks. During collection
+each page's title was fixed, so the title was a proxy for the layout and the model learned the
+pairing -- which is why it failed on real sites whose titles differ. A pool of twenty plausible
+titles was not enough: titles outside it answered 7/12 while the test, drawn from the pool, reported
+9/10. The model had memorised the pool. v12 draws titles from a vocabulary instead -- 7,954 distinct
+titles across the 10,686 action examples -- and there is nothing left to memorise.
+
 ### What moved the number
 
 | Change | Effect |
@@ -231,6 +292,7 @@ holdout: it was never used for training, and its labels are entirely different
 | Task family for a clock field and for a free-text note | `when` / `note` / `contact` subsets **100%** |
 | Removing the leftover index duplication in the prompt | no change (verified equivalent, 100% → 100%) |
 | Merging the adapter + Q4_K_M quantisation | no change (100% → 100%), 5.0 GB → 1.6 GB |
+| Randomising the page title and url in every training example | title-dependent → **invariant**, 12/12 valid steps |
 | Serving path, same weights and prompt | llama.cpp **0.23 s** · vLLM 0.95 s · naive HF generate 8.4 s |
 
 Training data scale and ablations are in [docs/pipeline.md](docs/pipeline.md); the eval JSONs are
@@ -278,7 +340,9 @@ expects. Both are the same code used during training.
 
 ## API
 
-jeva is a plain OpenAI-compatible chat endpoint. There is nothing to install server-side.
+jeva is a plain OpenAI-compatible chat endpoint. There is nothing to install server-side. A System
+One front end is available on top of it with `jeva systemone` -- see
+[Driving a browser](#driving-a-browser).
 
 ```bash
 curl -s localhost:8020/v1/chat/completions -H 'content-type: application/json' -d '{

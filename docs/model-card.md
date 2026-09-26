@@ -6,11 +6,12 @@
 |---|---|
 | **Model** | jeva — a browser-agent decision model |
 | **Base** | [`openbmb/MiniCPM5-2B`](https://modelscope.cn/models/OpenBMB/MiniCPM5-2B) (2.5B total, 2.0B non-embedding, `LlamaForCausalLM`, 42 layers, GQA 16/2) |
-| **Released** | 2026-09-23 |
-| **Method** | LoRA SFT (r=16, α=32, 1 epoch, 10,686 examples) then **merged into the base weights** |
+| **Released** | 2026-09-26 (v12) |
+| **Method** | LoRA SFT (r=16, α=32, 1 epoch, 10,686 examples) then **merged into the base weights**. Every training example has its page title and url replaced with randomly assembled ones |
 | **Context** | 4,096 tokens is plenty; the prompt is 550–1,100 tokens, the answer ~25 |
 | **License** | Apache-2.0 (same as the base) |
 | **Output** | one JSON action: `{"operation", "target", "text"}` |
+| **Interfaces** | OpenAI-compatible chat (`jeva serve`), and TypeSafe System One (`jeva systemone`) for jev-ultrafast |
 
 ## Intended use
 
@@ -69,17 +70,37 @@ against 18 invalid target indices for the base model.
 
 | Serving | Per decision |
 |---|---|
-| llama.cpp, Q4_K_M GGUF | **229 ms** |
+| llama.cpp, Q4_K_M GGUF | **236 ms** |
 | llama.cpp, Q8_0 GGUF | 283 ms |
 | vLLM, fp16 | 943 ms |
 | naive `transformers.generate` wrapper | 8.4 s |
 
+### Invariance
+
+A page title carries no information about which operation a field needs, so the answer must not move
+when it changes. Earlier revisions moved. Elements and goal fixed, twelve freshly generated titles:
+
+| Revision | Distinct answers for one page | Valid goal steps |
+|---|---|---|
+| v9 | 3 (title-dependent) | 10/12 |
+| v11 | 3 (title-dependent) | 8/12 |
+| **v12** | **1 (invariant)** | **12/12** |
+
+This is not cosmetic. During collection each page's title was fixed, so the title acted as a proxy
+for the layout and the model learned the pairing -- which is why it failed on real websites, whose
+titles differ. Randomising the title and url in every training example removes it.
+
 ## Calibration
 
-jeva does **not** return probabilities — it returns an action. Confidence is therefore not
-available the way it is for a classifier, and the model's `DONE` / `BLOCKED` output should be
-confirmed by whatever verifier the caller already has. This is a deliberate trade: the model was
-built to drive a loop, not to score items.
+The model itself does **not** return probabilities -- it returns an action -- and the model's
+`DONE` / `BLOCKED` output should be confirmed by whatever verifier the caller already has.
+
+The System One interface must emit probabilities, because its validator requires a distribution over
+the offered options summing to 1.0. Those are a **one-hot** and they are not calibrated. They could
+not be used as a reliability signal even if they were: measured on 28 cases, correct answers carry a
+median top-1 of **48%** and wrong ones **80%**. The model is more confident when it is wrong.
+
+This is a deliberate trade: the model was built to drive a loop, not to score items.
 
 ## Limitations
 
@@ -87,6 +108,9 @@ built to drive a loop, not to score items.
 - Trained on form-shaped flows; off-distribution behaviour is not characterised.
 - Prompt- and format-sensitive: the system prompt, the operation descriptions, and the state
   layout are part of the model. Use `jeva.prompt` / `jeva.render` rather than re-deriving them.
+- The version of this that depended on the page title (v9, v11) is not released. What has been
+  measured is titles; other incidental surface strings were not ablated, so the same defect may
+  remain elsewhere in a milder form.
 - Evaluated on three synthetic sites, in real Chrome, not on production websites.
 - The Bonsai-27B baseline rests on 10 tasks and is indicative only.
 
