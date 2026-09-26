@@ -274,6 +274,9 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="command")
 
     def add_serving_args(sp):
+        sp.add_argument("--api", choices=["openai", "systemone"], default="openai",
+                        help="openai: raw llama.cpp endpoint (default). systemone: also speak "
+                             "TypeSafe's /v1/systemone so a TypeSafe client needs no adapter")
         sp.add_argument("--backend", choices=["llamacpp", "vllm"], default="llamacpp")
         sp.add_argument("--variant", choices=list(VARIANTS), default="Q4_K_M")
         sp.add_argument("--gguf", help="explicit GGUF path (llamacpp)")
@@ -300,10 +303,23 @@ def build_parser() -> argparse.ArgumentParser:
                    help="leave the server running after the demo")
     m.set_defaults(func=cmd_demo)
 
+    so = sub.add_parser("systemone", help="serve the TypeSafe System One protocol on top of jeva")
+    so.add_argument("--port", type=int, default=8021)
+    so.add_argument("--backend", default="http://127.0.0.1:8020/v1",
+                    help="the jeva OpenAI-compatible endpoint to answer with")
+    so.add_argument("--model", default=DEFAULT_ALIAS)
+    so.set_defaults(func=cmd_systemone)
+
     c = sub.add_parser("check", help="diagnose the local setup")
     c.add_argument("--port", type=int, default=DEFAULT_PORT)
     c.set_defaults(func=cmd_check)
     return p
+
+
+def cmd_systemone(a) -> int:
+    from .systemone import serve
+    serve(port=a.port, model=a.model, base_url=a.backend)
+    return 0
 
 
 def main(argv=None) -> int:
