@@ -28,9 +28,9 @@ DEFAULT_PORT = 8020
 DEFAULT_ALIAS = "jeva"
 DEFAULT_PROFILE = os.path.expanduser("~/.local/share/jeva/chrome")
 VARIANTS = {
-    "Q4_K_M": "MiniCPM5-2B-WebDecider-v12-Q4_K_M.gguf",   # 1.6 GB, the recommended default
-    "Q8_0": "MiniCPM5-2B-WebDecider-v12-Q8_0.gguf",       # 2.7 GB
-    "F16": "MiniCPM5-2B-WebDecider-v12-F16.gguf",         # 5.0 GB
+    "Q4_K_M": "MiniCPM5-2B-WebDecider-v14-Q4_K_M.gguf",   # 1.6 GB, the recommended default
+    "Q8_0": "MiniCPM5-2B-WebDecider-v14-Q8_0.gguf",       # 2.7 GB
+    "F16": "MiniCPM5-2B-WebDecider-v14-F16.gguf",         # 5.0 GB
 }
 # 权重来源：按顺序尝试，第一个成功的胜出。设 JEVA_BASE_URL 可覆盖（单一来源）。
 BASE_URLS = [

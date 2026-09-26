@@ -6,7 +6,7 @@
 |---|---|
 | **Model** | jeva — a browser-agent decision model |
 | **Base** | [`openbmb/MiniCPM5-2B`](https://modelscope.cn/models/OpenBMB/MiniCPM5-2B) (2.5B total, 2.0B non-embedding, `LlamaForCausalLM`, 42 layers, GQA 16/2) |
-| **Released** | 2026-09-26 (v12) |
+| **Released** | 2026-09-26 (v14) |
 | **Method** | LoRA SFT (r=16, α=32, 1 epoch, 10,686 examples) then **merged into the base weights**. Every training example has its page title and url replaced with randomly assembled ones |
 | **Context** | 4,096 tokens is plenty; the prompt is 550–1,100 tokens, the answer ~25 |
 | **License** | Apache-2.0 (same as the base) |
@@ -77,18 +77,27 @@ against 18 invalid target indices for the base model.
 
 ### Invariance
 
-A page title carries no information about which operation a field needs, so the answer must not move
-when it changes. Earlier revisions moved. Elements and goal fixed, twelve freshly generated titles:
+Four surfaces that carry no information about which action is correct, one per axis. Each case
+carries the set of steps that advance that page toward its goal, so which requirement is tackled first
+is left free.
 
-| Revision | Distinct answers for one page | Valid goal steps |
-|---|---|---|
-| v9 | 3 (title-dependent) | 10/12 |
-| v11 | 3 (title-dependent) | 8/12 |
-| **v12** | **1 (invariant)** | **12/12** |
+| Revision | Fresh titles | Synonyms | Inserted elements | Shuffled form | Reworded goal |
+|---|---|---|---|---|---|
+| v12 | 1 distinct, 12/12 | 16/16 | 3/3 | **0/3** | 5/5 |
+| **v14** | 1 distinct, 12/12 | 16/16 | 3/3 | **3/3** | 5/5 |
 
-This is not cosmetic. During collection each page's title was fixed, so the title acted as a proxy
-for the layout and the model learned the pairing -- which is why it failed on real websites, whose
-titles differ. Randomising the title and url in every training example removes it.
+Synonyms, inserted elements and reworded goals were already fine. The shuffled form was not: with the
+same controls, labels and goal, reordered and renumbered, v12 answered with a step that advances
+nothing, three times out of three. It was not reading the row it had picked; it was remembering where
+that control usually sits, so on a site whose form is ordered differently the click lands on the
+wrong control. Element order is now shuffled in every action training example, with the target
+remapped.
+
+The page title had the same defect earlier, for the same reason: fixed per site during collection, it
+acted as a proxy for the layout and the model learned the pairing. Randomising it took the answer
+from three different operations over one page to one. A pool of twenty plausible titles was not
+enough -- titles outside it answered 7/12 while the test, drawn from the pool, reported 9/10 -- so
+titles are assembled from a vocabulary: 7,954 distinct ones across the 10,686 action examples.
 
 ## Calibration
 
@@ -108,9 +117,9 @@ This is a deliberate trade: the model was built to drive a loop, not to score it
 - Trained on form-shaped flows; off-distribution behaviour is not characterised.
 - Prompt- and format-sensitive: the system prompt, the operation descriptions, and the state
   layout are part of the model. Use `jeva.prompt` / `jeva.render` rather than re-deriving them.
-- The version of this that depended on the page title (v9, v11) is not released. What has been
-  measured is titles; other incidental surface strings were not ablated, so the same defect may
-  remain elsewhere in a milder form.
+- The revisions that depended on the page title (v9, v11) and on element order (v12) are not
+  released. Four axes of incidental surface have now been ablated -- title, label synonyms, inserted
+  elements, element order -- and goals were reworded; anything outside those is unmeasured.
 - Evaluated on three synthetic sites, in real Chrome, not on production websites.
 - The Bonsai-27B baseline rests on 10 tasks and is indicative only.
 

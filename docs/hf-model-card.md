@@ -247,9 +247,11 @@ the student has to learn state tracking from the state alone.
 - Not a general assistant, and it does not return calibrated probabilities. Under the System One
   interface a one-hot is emitted because the protocol requires a distribution; it is not a
   confidence.
-- The page title no longer affects the answer: over one unchanged page and twelve freshly generated
-  titles it gives one distinct, valid answer, where earlier revisions gave three. Other incidental
-  surface strings were not ablated, so a milder form of the same defect may remain.
+- The answer no longer moves with the surface. Over one unchanged page: twelve freshly generated
+  titles give one distinct, valid answer, and the same form shuffled and renumbered gives a real step
+  where an earlier revision picked a control that advanced nothing. Synonyms for element labels,
+  elements inserted before the form, and reworded goals were already handled. Anything outside those
+  four axes is unmeasured.
 - Evaluated on three synthetic sites in real Chrome, not on production websites; the 27B baseline rests on 10 tasks.
 
 ## License

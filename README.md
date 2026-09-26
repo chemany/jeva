@@ -28,7 +28,7 @@ beyond your usual inference stack.
 - **One decision, one call, ~230 ms.** 2B parameters, 1.6 GB as a Q4_K_M GGUF, running under llama.cpp on a single V100.
 - **Typed action space.** `CLICK` · `TYPE_TEXT` · `SELECT` · `WAIT` · `DONE` · `BLOCKED`, targeting indices from the observation you supplied.
 - **No invented selectors.** The model returns an index; your executor resolves it against the same snapshot. It never emits CSS, coordinates, or JavaScript.
-- **Answers do not move with the page title.** Twelve freshly generated titles over one unchanged page: one distinct answer, twelve valid goal steps. The previous revision gave three different answers.
+- **Answers do not move with the surface.** Twelve freshly generated titles and a reordered form over one unchanged page: one distinct answer, every one a valid goal step. Earlier revisions gave three different answers under a title change and picked the wrong control under a layout change.
 - **Speaks the protocol jev-ultrafast already uses.** `jeva systemone` serves TypeSafe's `/v1/systemone`, so repointing an existing agent is a one-line change.
 - **100% task success on the frozen suites**, including a site whose label vocabulary and layout never appear in training.
 - **Zero human labels.** 10,686 training trajectories from 2,600 tasks, collected in ~30 minutes; training is one LoRA pass, ~75 minutes on one V100.
@@ -263,23 +263,35 @@ holdout: it was never used for training, and its labels are entirely different
 | **`site3` (never trained, new labels)** | 40 | **100%** |
 | live `httpbin.org/forms/post` (never trained, real markup) | 4 runs | see [above](#real-site-spot-check) |
 
-### Invariance: the same page under a different title
+### Invariance: the surfaces that carry no information
 
-A page title says nothing about which operation a field needs, so the answer must not move when it
-changes. It did. Held-out elements and goal constant, twelve freshly generated titles:
+Four things that say nothing about which action is correct, one per axis, measured by
+`training/surface_ablation.py` and `training/title_ablation.py`. Every case carries the set of steps
+that advance that page toward its goal, so *which* of the page's requirements is tackled first is
+left free.
 
-| Model | Distinct answers for one page | Valid goal steps |
-|---|---|---|
-| v9 | 3 (**title-dependent**) | 10/12 |
-| v11 | 3 (**title-dependent**) | 8/12 |
-| **v12** (this release) | **1 (invariant)** | **12/12** |
+| Model | Fresh titles | Synonyms | Inserted elements | **Shuffled form** | Reworded goal |
+|---|---|---|---|---|---|
+| v12 | 1 distinct, 12/12 | 16/16 | 3/3 | **0/3** | 5/5 |
+| **v14** | 1 distinct, 12/12 | 16/16 | 3/3 | **3/3** | 5/5 |
 
-This is measured by `training/title_ablation.py` and is worth more than it looks. During collection
-each page's title was fixed, so the title was a proxy for the layout and the model learned the
-pairing -- which is why it failed on real sites whose titles differ. A pool of twenty plausible
-titles was not enough: titles outside it answered 7/12 while the test, drawn from the pool, reported
-9/10. The model had memorised the pool. v12 draws titles from a vocabulary instead -- 7,954 distinct
-titles across the 10,686 action examples -- and there is nothing left to memorise.
+Synonyms, extra elements and reworded goals were already fine. **The shuffled form was not.** Same
+controls, same labels, same goal, reordered and renumbered: v12 answered with a step that advances
+nothing, three times out of three. It was not reading the row it had picked — it was remembering
+where that control usually sits, so on any site whose form is ordered differently the click lands on
+the wrong control. Element order is now shuffled in every action training example, with the target
+remapped; `training/layout.py` does it and checks itself by round trip.
+
+A page's title had the same defect earlier, for the same reason: during collection it was fixed per
+site, so it acted as a proxy for the layout and the model learned the pairing. Randomising it is what
+took the answer from three different operations over one page to one. A pool of twenty plausible
+titles was not enough — titles outside it answered 7/12 while the test, drawn from the pool, reported
+9/10. Titles are assembled from a vocabulary instead: 7,954 distinct ones across the 10,686 action
+examples.
+
+The content set is deliberately **not** shuffled. Order is incidental for "which control do I act
+on", but for "which block is the first news article" it is part of the answer: a model trained with
+the content set shuffled scored 25/30 on a shuffled holdout where the unshuffled model scored 28/30.
 
 ### What moved the number
 
@@ -293,6 +305,7 @@ titles across the 10,686 action examples -- and there is nothing left to memoris
 | Removing the leftover index duplication in the prompt | no change (verified equivalent, 100% → 100%) |
 | Merging the adapter + Q4_K_M quantisation | no change (100% → 100%), 5.0 GB → 1.6 GB |
 | Randomising the page title and url in every training example | title-dependent → **invariant**, 12/12 valid steps |
+| Shuffling element order in every action example | shuffled form **0/3 → 3/3** (content set left alone; shuffling it cost 3 tasks) |
 | Serving path, same weights and prompt | llama.cpp **0.23 s** · vLLM 0.95 s · naive HF generate 8.4 s |
 
 Training data scale and ablations are in [docs/pipeline.md](docs/pipeline.md); the eval JSONs are

@@ -18,9 +18,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # ModelScope 的用户名与 GitHub 的 chemany 不是同一个账号
 REPO=${MODELSCOPE_REPO:-imjasonli/jeva}
-# v12 is the released revision; older runs stay on disk as MiniCPM5-2B-WebDecider-v{3..11}*
-MERGED=${MERGED_DIR:-/root/code/models/MiniCPM5-2B-WebDecider-v12}
-GGUF=${GGUF_DIR:-/root/code/models/MiniCPM5-2B-WebDecider-v12-GGUF}
+# v14 is the released revision; older runs stay on disk as MiniCPM5-2B-WebDecider-v{3..13}*
+MERGED=${MERGED_DIR:-/root/code/models/MiniCPM5-2B-WebDecider-v14}
+GGUF=${GGUF_DIR:-/root/code/models/MiniCPM5-2B-WebDecider-v14-GGUF}
 PY=${PY:-python3}
 
 # The SDK authenticates through MODELSCOPE_API_TOKEN, not through the file directly, so the
