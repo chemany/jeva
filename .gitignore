@@ -12,3 +12,7 @@ models/
 
 # 采集/训练/服务日志
 *.log
+
+# 训练数据不入库：语料/适配器/检查点留在 /root/code/jeva-content
+training/**/*.jsonl
+runs/
