@@ -40,7 +40,6 @@ pip install jeva        # 客户端 + CLI，约 19 KB，零依赖
 jeva download          # 拉 Q4_K_M 权重（1.6 GB）到 ~/.cache/jeva，附 sha256
 jeva demo              # 服务没起就帮你起，然后做一次真实决策
 jeva serve             # 把服务留在 127.0.0.1:8020
-jeva run <网址> <目标>   # 用真实 Chrome 逐步完成目标
 jeva check             # 报告缺什么（llama-server / 权重 / 端口）
 ```
 
@@ -102,67 +101,25 @@ python examples/quickstart.py            # 用内置的示例观察
 
 ## 驱动浏览器
 
-`Jeva` 负责决策，`jeva.Agent` 负责它外面的循环。一条命令即可驱动真实 Chrome：
+**jeva 只是 API，别的都不是。** 它接收一份观察和一个目标，返回一个动作。驱动是调用它的智能体软件的职责，
+本仓库集成的是参考实现：
 
 ```bash
-jeva run "https://example.com/order" \
-  "Order one large pizza with mushrooms and cheese, for delivery at 12:30, then place the order." \
-  --screenshots ./steps --json
+git clone https://github.com/browser-use/jev-ultrafast /tmp/jev-ultrafast
+
+python integrations/jev-ultrafast/run.py \
+  "Find one-way flights from Zurich to London on September 20, 2026, for two adults in Business." \
+  "http://127.0.0.1:8899/flights.html"
 ```
 
-```python
-from jeva import Agent
+[browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) 提供浏览器层（browser-harness，
+驱动真实 Chrome）、循环与守卫——新鲜度校验、决策一次性消费、重复动作熔断。它的 `agent.py`、`browser.py`、
+`snapshot.js` **一行未改**，只替换了 `choose()` 与 `field_text()`。实测：机票测试页 **4.4 秒**，
+线上 httpbin 表单 **5.2 秒**。
 
-with Agent("https://example.com/order", "Order one large pizza ...") as agent:
-    result = agent.run()
-print(result.status, result.url, len(result.steps))
-```
+细节（含 jeva 强制的三处适配）见 [integrations/jev-ultrafast/README.md](integrations/jev-ultrafast/README.md)。
 
-### 需要登录态的站点：登录一次，之后全无头
-
-默认就是**无头浏览器：不需要任何授权、不弹窗口、不需要 `DISPLAY`**。登录态用**持久 profile**
-解决，而不是去借用您日常的浏览器：
-
-```bash
-jeva login --url https://example.com/login          # 只做一次：弹出窗口，您自己登录
-jeva run "https://example.com/orders" "下载上个月的发票" \
-  --profile-dir ~/.local/share/jeva/chrome          # 之后全程无头
-```
-
-**刻意不走 Chrome 的"允许远程调试"那条路**：那个授权每次连接都要人工点一次，与"无人值守"正好相反。
-持久 profile 不需要任何授权，而且它是独立的一次性 profile——您自己的书签、密码、标签页全程不受影响。
-两个注意点：让 Chrome 正常退出（它批量写盘，强杀会丢 cookie，`jeva login` 已处理）；站点必须设置
-**带过期时间**的 cookie，纯会话 cookie 任何浏览器都不会持久化。
-
-### 不可逆动作：`--vote`
-
-点错"提交"/"付款"/"删除"收不回来。开 `--vote N` 后，标签命中内置列表（`submit`/`pay`/`delete`/
-`place order` 等）的动作会采样 N 次，**全部一致才执行**；普通动作仍是单次 230 ms 决策。分歧时
-**一个动作都不执行**：返回 `status="unsure"`、退出码 4，并列出各方票数。
-
-实测（真实表单）：7 个普通步骤零额外开销，唯一 `Submit order` 那步采样 3 次全一致，总耗时 6.9 秒
-（不投票 6.8 秒）。而在一个刻意含糊的页面（`Confirm order` 与 `Cancel order` 并排，目标写
-"处理这个待定订单"）上，5 次采样分裂成 2/2/1，**什么都没执行**。
-
-**这是"一致性"，不是概率。** jeva 没有概率头——"自信但错误"和"自信且正确"长得一模一样。它的价值
-更窄也更诚实：**模型不肯复现的决策，就不该动手**。`--vote` 要求温度大于 0，温度 0 时每次采样完全相同。
-
-可选的 `--escalate-url` 让另一个端点裁决分歧。**默认关闭，也不需要第二个模型**——不给它就是分歧即停，
-这是推荐行为。只有您确实拥有**更可信**的模型时才接上。
-
-循环存在的理由是：**一个决策只有被检查过才是安全可执行的**。
-
-| 守卫 | 挡住什么 |
-|---|---|
-| 序号对回该决策所依据的那份观察 | 决策作用到之后才出现的元素上 |
-| 决策一次性消费 | 重试导致点两次 |
-| 动作前、以及接受 `DONE`/`BLOCKED` 前都重新校验新鲜度 | 对着已经变了的页面点击，或对旧页面声称完成 |
-| 连续 3 步页面无变化即终止 | 迷糊的决策模型耗光整份步数预算 |
-
-`status` 是模型的**声称**。结果里带着结束页 URL、页面文本与逐步动作，供你的代码验证——
-提交成功时参数通常都在 URL 里。**不要把 `status == "done"` 当成证据。**
-
-实测（机票测试页）：7 步 4.2 秒，含截图（单卡 V100，Q4_K_M）。
+`evals/` 下的浏览器层是**采集与评测用的夹具**，不是产品驱动，也不打算成为产品驱动。
 
 ## 模型
 
@@ -407,9 +364,9 @@ python scripts/convert_gguf.sh
 
 ## 局限
 
-- **模型只做决策，执行由循环负责。** `Jeva.decide()` 返回的是**你提供的那份观察**里的序号，
-  仅此而已。`jeva.Agent`（或 `jeva run`）提供循环、执行器与守卫——但它的 `DONE` 依然是
-  **声称**而非证据。
+- **模型只做决策，驱动由调用方负责。** `Jeva.decide()` 返回的是**你提供的那份观察**里的序号，
+  仅此而已——包里没有浏览器、也没有循环。这些由智能体软件提供：本仓库用的是 jev-ultrafast
+  （见[驱动浏览器](#驱动浏览器)）。它的 `DONE` 依然是**声称**而非证据。
 - **动作空间很窄。** 没有 `SCROLL`、没有文件上传、没有多步下拉控件。你的智能体若需要这些，
   请扩展动作空间并重训。
 - **面向表单形态的任务。** 它在搜索/筛选/表单/自动补全这类流程上训练；`DONE` 与 `BLOCKED`

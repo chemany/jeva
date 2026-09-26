@@ -42,7 +42,6 @@ jeva download          # Q4_K_M weights (1.6 GB) into ~/.cache/jeva, with sha256
 jeva demo              # start a server if it is not running, make one decision
 jeva serve             # leave the server running on 127.0.0.1:8020
 jeva check             # report what is missing (llama-server, weights, port)
-jeva run <url> <goal>  # drive a real Chrome towards the goal, one step at a time
 ```
 
 Only the client ships in the wheel — weights are fetched on demand, because a 1.6 GB GGUF has no
@@ -105,75 +104,28 @@ python examples/quickstart.py            # uses the built-in demo observation
 
 ## Driving a browser
 
-`Jeva` decides; `jeva.Agent` runs the loop around it. One command drives a real Chrome:
+**jeva is the API and nothing else.** It takes an observation and a goal and returns one action.
+Driving belongs to the agent software that calls it, and this repo integrates the reference one:
 
 ```bash
-jeva run "https://example.com/order" \
-  "Order one large pizza with mushrooms and cheese, for delivery at 12:30, then place the order." \
-  --screenshots ./steps --json
+git clone https://github.com/browser-use/jev-ultrafast /tmp/jev-ultrafast
+
+python integrations/jev-ultrafast/run.py \
+  "Find one-way flights from Zurich to London on September 20, 2026, for two adults in Business." \
+  "http://127.0.0.1:8899/flights.html"
 ```
 
-```python
-from jeva import Agent
+[browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) supplies the browser layer
+(browser-harness, driving a real Chrome), the loop, and the guards -- staleness checks, one-shot
+decisions, a repeat detector. `agent.py`, `browser.py` and `snapshot.js` run **unmodified**; only
+`choose()` and `field_text()` are swapped. Measured: **4.4 s** for the flight fixture, **5.2 s** for
+the live httpbin form.
 
-with Agent("https://example.com/order", "Order one large pizza ...") as agent:
-    result = agent.run()
-print(result.status, result.url, len(result.steps))
-```
+Details, including the three adaptations jeva forces, are in
+[integrations/jev-ultrafast/README.md](integrations/jev-ultrafast/README.md).
 
-### Logged-in sites: sign in once, then stay headless
-
-The default is a **headless browser with no permission prompts, no window and no `DISPLAY`**. Login
-state comes from a persistent profile instead of borrowing your daily browser:
-
-```bash
-jeva login --url https://example.com/login          # one time: a window opens, you sign in
-jeva run "https://example.com/orders" "Download last month's invoices" \
-  --profile-dir ~/.local/share/jeva/chrome          # headless from here on
-```
-
-Chrome's "allow remote debugging" switch is deliberately *not* the mechanism: that prompt has to be
-approved per connection, which is the opposite of unattended. A persistent profile needs no
-approval, and it is a separate throwaway profile -- your own bookmarks, passwords and tabs are
-never touched. Two caveats: let Chrome close normally (Chrome flushes cookies in batches, so a
-killed process loses them, which `jeva login` handles), and the site must set a cookie with an
-expiry -- a pure session cookie is not persisted by any browser.
-
-### Irreversible actions: `--vote`
-
-Clicking the wrong "Submit", "Pay" or "Delete" cannot be undone. With `--vote N`, an action whose
-label matches the built-in list (`submit`, `pay`, `delete`, `place order`, ...) is sampled N times
-and executed only if every sample agrees; ordinary actions keep the single 230 ms decision. On
-disagreement nothing runs: the run returns `status="unsure"`, exit code 4, and reports the split.
-
-Measured on the live form: the seven ordinary steps cost nothing extra, the one `Submit order` step
-took 3 agreeing samples, 6.9 s total against 6.8 s without voting. On a deliberately ambiguous page
-(`Confirm order` next to `Cancel order`, goal "Handle the pending order") five samples split 2/2/1
-and **no action executed**.
-
-**This is agreement, not probability.** jeva has no probability head -- a confident wrong sample
-looks exactly like a confident right one. The value is narrower and honest: a decision the model
-will not reproduce is a decision not to act on. `--vote` needs a temperature above 0; at 0 every
-sample is identical.
-
-An optional `--escalate-url` lets a second endpoint break the tie. It is **off by default and no
-second model is required** -- without it, disagreement simply stops the run, which is the
-recommended behaviour. Only wire it up if you actually own a *more trustworthy* model.
-
-The loop exists because a decision is only safe to execute if something checks it:
-
-| Guard | What it prevents |
-|---|---|
-| the target index is resolved against the observation the decision came from | a decision acting on an element that appeared later |
-| the decision is consumed once | a retry clicking twice |
-| freshness is re-checked before acting, and before accepting `DONE` / `BLOCKED` | clicking into a page that moved, or "done" against a stale page |
-| three actions that change nothing end the run | a confused decider spending the whole step budget |
-
-`status` is the model's claim. The result carries the final URL, the page text and the steps, so
-your code can verify -- a submitted form usually puts every value in the URL. **Do not treat
-`status == "done"` as proof.**
-
-Measured on the flight fixture: 7 steps in 4.2 s, screenshots included (one V100, Q4_K_M).
+The harness under `evals/` is a fixture harness for collecting and evaluating trajectories. It is
+not a production driver and does not aim to be one.
 
 ## Models
 
@@ -430,9 +382,10 @@ same pipeline produces training data for that site. See [docs/pipeline.md](docs/
 
 ## Limits
 
-- **The model decides; the loop acts.** `Jeva.decide()` returns an index into the observation *you*
-  supplied and nothing else. `jeva.Agent` (or `jeva run`) supplies the loop, the executor and the
-  guards -- but its `DONE` is still a claim, not proof.
+- **The model decides; the caller drives.** `Jeva.decide()` returns an index into the observation
+  *you* supplied and nothing else -- the package contains no browser and no loop. Agent software
+  supplies those: this repo uses jev-ultrafast (see [Driving a browser](#driving-a-browser)). Its
+  `DONE` is still a claim, not proof.
   Your executor must resolve it, check the page is still fresh, and handle failure.
 - **Narrow action space.** No `SCROLL`, no file uploads, no multi-step dropdown widgets. If your
   agent needs those, extend the action space and retrain.
